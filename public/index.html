@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Mine Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Thư viện Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <!-- Nền mờ cực đẹp -->
+    <div class="bg-shape circle-1"></div>
+    <div class="bg-shape circle-2"></div>
+    
+    <div class="glass-container">
+        <!-- Dashboard Chính (Bên Trái) -->
+        <div class="dashboard">
+            <header>
+                <h1><i class="fa-solid fa-robot"></i> BOT MANAGER</h1>
+                <p>LuckyVN - Spring Server - Treo 24/7</p>
+            </header>
+
+            <div class="add-account-box">
+                <h3><i class="fa-solid fa-user-plus"></i> Thêm Tài Khoản</h3>
+                <div class="form-group">
+                    <input type="text" id="newUsername" placeholder="Tên đăng nhập (Username)">
+                    <input type="text" id="newPass" placeholder="Mật khẩu (VD: 12345)">
+                    <button id="btnAdd"><i class="fa-solid fa-plus"></i> THÊM</button>
+                </div>
+            </div>
+
+            <div class="content-left">
+                <!-- KHU VỰC THAO TÁC HÀNG LOẠT & THỐNG KÊ -->
+                <div class="dashboard-widgets">
+                    <div class="mass-control-panel">
+                        <input type="text" id="chatAllInput" onkeypress="if(event.key === 'Enter') sendChatAll()" placeholder="Lệnh cho TOÀN BỘ BOT (VD: /sell all)...">
+                        <button onclick="sendChatAll()" class="btn-mass"><i class="fa-solid fa-bullhorn"></i> TỔNG TẤN CÔNG</button>
+                    </div>
+
+                    <div class="analytics-panel">
+                        <h4>
+                            📊 TỔNG CỤC KẾ TOÁN 
+                            <button class="btn btn-mass" style="float: right; padding: 4px 8px; font-size: 11px; margin-top: -3px;" onclick="toggleChestPanel()"><i class="fa-solid fa-table-list"></i> BẢNG VỊ TRÍ CHI TIẾT</button>
+                        </h4>
+                        <div id="analyticsContent" class="analytics-content">
+                            <span class="empty-text">Chưa nội soi được rương nào... Đang chờ dữ liệu!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="accountList">
+                    <!-- Danh sách tài khoản hiển thị ở đây -->
+                </div>
+
+                <!-- KHU VỰC TOẠ ĐỘ -->
+                <div class="location-manager-panel" style="margin-bottom: 20px; background: rgba(0, 0, 0, 0.4); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); padding: 15px;">
+                    <h3 style="color: #60a5fa; margin-bottom: 10px; font-size: 16px;"><i class="fa-solid fa-map-location-dot"></i> SỔ TAY TOẠ ĐỘ (TỰ ĐỘNG BẮT ĐƯỢC = LỆNH !setafk)</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="locName" placeholder="Tên (VD: Góc 1)" style="flex: 2; background: #222; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 5px;">
+                        <input type="number" id="locX" placeholder="X" style="flex: 1; background: #222; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 5px;">
+                        <input type="number" id="locY" placeholder="Y" style="flex: 1; background: #222; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 5px;">
+                        <input type="number" id="locZ" placeholder="Z" style="flex: 1; background: #222; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 5px;">
+                        <button onclick="addLocation()" style="flex: 0.5; background: #3b82f6; font-weight: bold; border: none; color: white; border-radius: 5px; cursor: pointer;"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="locationList" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: #888; font-size: 13px;">Đang tải dữ liệu toạ độ...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chest-table-wrapper" id="chestTableWrapper" style="display: none; margin-top: 15px; margin-bottom: 20px; background: rgba(0, 0, 0, 0.4); border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); padding: 15px;">
+                <h3 style="color: #4ade80; margin-bottom: 10px; font-size: 16px;"><i class="fa-solid fa-list-ol"></i> SƠ ĐỒ VỊ TRÍ ĐỒ VẬT TRONG RƯƠNG</h3>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    <table style="width: 100%; text-align: left; border-collapse: collapse; color: white; background: #00000030;">
+                        <thead style="position: sticky; top: 0; background: #222;">
+                            <tr style="border-bottom: 2px solid #555;">
+                                <th style="padding: 8px;">Acc / Tên Rương</th>
+                                <th style="padding: 8px; width: 80px; text-align: center;">Vị Trí (Slot)</th>
+                                <th style="padding: 8px;">Tên Vật Phẩm</th>
+                                <th style="padding: 8px; width: 80px;">Số Lượng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chestTableData">
+                            <tr><td colspan="4" style="text-align:center; padding: 10px; color: #aaa;">Đang chờ Bot mở rương...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bot-grid" id="botGrid">
+                <!-- Data will be injected here via JS -->
+            </div>
+        </div>
+
+        <!-- Bảng điều khiển Console (Bên Phải) -->
+        <div class="console-panel">
+            <div class="console-header">
+                <h2><i class="fa-solid fa-terminal"></i> LIVE CONSOLE</h2>
+                <button id="btnClearLog"><i class="fa-solid fa-trash-can"></i> Xoá Log</button>
+            </div>
+            <div class="console-window" id="consoleWindow">
+                <div class="log-entry system">[SYSTEM] Web Panel đã kết nối với máy chủ Bệ Phóng.</div>
+            </div>
+            
+            <!-- Phần Input Chat cho Bot -->
+            <div class="console-input-area">
+                <input type="text" id="chatInput" placeholder="Chọn một thẻ Bot để nhập lệnh (VD: /pv 2)..." disabled>
+                <button id="btnSendChat" disabled><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

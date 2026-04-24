@@ -1,0 +1,52 @@
+[
+    {
+        "id": "acc-1",
+        "username": "Matizw2",
+        "pass": "92211100",
+        "mode": "random",
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "pvStart": 3,
+        "pvEnd": 4
+    },
+    {
+        "id": "acc-2",
+        "username": "Acetazolamid",
+        "pass": "Dat.2512",
+        "mode": "random",
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "pvStart": 2,
+        "pvEnd": 5
+    },
+    {
+        "id": "acc-3",
+        "username": "vicentenguyen",
+        "pass": "Dat.2512",
+        "mode": "random",
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "pvStart": 2,
+        "pvEnd": 4
+    },
+    {
+        "id": "acc-4",
+        "username": "nguthichetocc",
+        "pass": "123456987a",
+        "mode": "random",
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "pvStart": 2,
+        "pvEnd": 5
+    },
+    {
+        "id": "acc-5",
+        "username": "yuevn",
+        "pass": "15112009",
+        "mode": "random",
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "pvStart": 2,
+        "pvEnd": 5
+    }
+]

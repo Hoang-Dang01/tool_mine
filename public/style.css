@@ -1,0 +1,514 @@
+/* ==============================
+   THIẾT KẾ: GLASSMORPHISM DARK MODE
+   STYLES TẬP TRUNG TẠO SỰ CHUYÊN NGHIỆP VÀ MƯỢT MÀ
+   ============================== */
+
+   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+   * {
+       margin: 0;
+       padding: 0;
+       box-sizing: border-box;
+       font-family: 'Inter', sans-serif;
+   }
+   
+   body {
+       background-color: #0f111a;
+       color: #e2e8f0;
+       height: 100vh;
+       overflow: hidden;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+       position: relative;
+   }
+   
+   /* Hình nền tạo hiệu ứng gradient phát sáng */
+   .bg-shape {
+       position: absolute;
+       border-radius: 50%;
+       filter: blur(100px);
+       z-index: 0;
+   }
+   
+   .circle-1 {
+       width: 400px;
+       height: 400px;
+       background: rgba(121, 40, 202, 0.5);
+       top: -100px;
+       left: -100px;
+   }
+   
+   .circle-2 {
+       width: 500px;
+       height: 500px;
+       background: rgba(255, 0, 128, 0.3);
+       bottom: -150px;
+       right: -50px;
+   }
+   
+   /* Khung Kính chính */
+   .glass-container {
+       width: 95%;
+       height: 90vh;
+       background: rgba(20, 22, 34, 0.6);
+       backdrop-filter: blur(20px);
+       -webkit-backdrop-filter: blur(20px);
+       border: 1px solid rgba(255, 255, 255, 0.08);
+       border-radius: 24px;
+       z-index: 1;
+       display: flex;
+       overflow: hidden;
+       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+   }
+   
+   /* =========== Cột Trái (Danh sách Bot) =========== */
+   .dashboard {
+       flex: 3;
+       padding: 30px;
+       display: flex;
+       flex-direction: column;
+       border-right: 1px solid rgba(255, 255, 255, 0.05);
+   }
+   
+   header h1 {
+       font-size: 28px;
+       font-weight: 700;
+       background: -webkit-linear-gradient(#fff, #cbd5e1);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       margin-bottom: 5px;
+   }
+   
+   header p {
+       font-size: 14px;
+       color: #94a3b8;
+       margin-bottom: 25px;
+   }
+   
+   /* Form Thêm Account */
+   .add-account-box {
+       background: rgba(255, 255, 255, 0.03);
+       padding: 20px;
+       border-radius: 16px;
+       border: 1px solid rgba(255, 255, 255, 0.05);
+       margin-bottom: 25px;
+   }
+   
+   .add-account-box h3 {
+       font-size: 16px;
+       margin-bottom: 15px;
+       color: #e2e8f0;
+   }
+   
+   .form-group {
+       display: flex;
+       gap: 15px;
+   }
+   
+   .form-group input {
+       flex: 1;
+       background: rgba(0, 0, 0, 0.2);
+       border: 1px solid rgba(255, 255, 255, 0.1);
+       padding: 12px 15px;
+       border-radius: 8px;
+       color: #fff;
+       outline: none;
+       transition: border-color 0.3s;
+   }
+   
+   .form-group input:focus {
+       border-color: #7928ca;
+   }
+   
+   .form-group button {
+       padding: 0 25px;
+       background: linear-gradient(135deg, #7928ca, #ff0080);
+       border: none;
+       border-radius: 8px;
+       color: white;
+       font-weight: 600;
+       cursor: pointer;
+       transition: transform 0.2s, box-shadow 0.2s;
+   }
+   
+   .form-group button:hover {
+       transform: translateY(-2px);
+       box-shadow: 0 8px 20px rgba(255, 0, 128, 0.4);
+   }
+   
+   /* Grid Các Con Bot */
+   .bot-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+       gap: 20px;
+       overflow-y: auto;
+       padding-right: 10px;
+   }
+   
+   /* Cấu hình Thanh kéo (Scrollbar) xịn */
+   ::-webkit-scrollbar { width: 6px; }
+   ::-webkit-scrollbar-track { background: transparent; }
+   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+   ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+   
+   /* Thẻ Bot Card */
+   .bot-card {
+       background: rgba(255, 255, 255, 0.03);
+       border: 1px solid rgba(255, 255, 255, 0.08);
+       border-radius: 16px;
+       padding: 20px;
+       transition: all 0.3s ease;
+       position: relative;
+       cursor: pointer;
+   }
+   
+   .bot-card:hover {
+       background: rgba(255, 255, 255, 0.05);
+       transform: translateY(-3px);
+       border-color: rgba(255, 255, 255, 0.15);
+   }
+
+   .bot-card.selected {
+       border-color: #4ade80;
+       box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+       background: rgba(34, 197, 94, 0.05);
+   }
+
+   .bot-info h4 {
+       font-size: 18px;
+       color: #fff;
+       margin-bottom: 5px;
+       display: flex;
+       align-items: center;
+       gap: 8px;
+   }
+   
+   .status-badge {
+       font-size: 11px;
+       padding: 3px 8px;
+       border-radius: 12px;
+       font-weight: 600;
+       text-transform: uppercase;
+       letter-spacing: 0.5px;
+   }
+   
+   .status-offline { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+   .status-connecting { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+   .status-online { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+   
+   .bot-info p {
+       font-size: 12px;
+       color: #64748b;
+       margin-bottom: 10px;
+   }
+
+   /* Khu vực Config: Combobox Mode & Checkbox PvP */
+   .bot-configs {
+       display: flex;
+       align-items: center;
+       flex-wrap: wrap;
+       gap: 8px;
+       margin-bottom: 15px;
+   }
+
+   .mode-select {
+       background: rgba(0, 0, 0, 0.3);
+       border: 1px solid rgba(255, 255, 255, 0.1);
+       color: #e2e8f0;
+       border-radius: 6px;
+       padding: 5px 8px;
+       font-size: 11px;
+       outline: none;
+       cursor: pointer;
+       flex: 1;
+   }
+
+   .mode-select option {
+       background: #1e1e2d;
+       color: #fff;
+   }
+   
+   .pvp-toggle {
+       font-size: 11px;
+       color: #f87171;
+       display: flex;
+       align-items: center;
+       gap: 4px;
+       cursor: pointer;
+       background: rgba(239, 68, 68, 0.1);
+       padding: 5px 8px;
+       border-radius: 6px;
+       border: 1px solid rgba(239, 68, 68, 0.2);
+   }
+
+   .pvp-toggle input {
+       accent-color: #ef4444;
+       cursor: pointer;
+   }
+
+   .btn-save-config {
+       background: #10b981;
+       color: #fff;
+       border: none;
+       border-radius: 6px;
+       padding: 5px 10px;
+       font-size: 10px;
+       font-weight: bold;
+       cursor: pointer;
+       transition: background 0.3s;
+       flex-shrink: 0;
+   }
+   
+   .btn-save-config:hover {
+       background: #059669;
+   }
+
+   /* Thao tác hàng loạt & Thống kê */
+   .dashboard-widgets {
+       display: flex;
+       gap: 15px;
+       margin-bottom: 20px;
+   }
+   .mass-control-panel, .analytics-panel {
+       background: rgba(30, 30, 45, 0.7);
+       border: 1px solid rgba(255, 255, 255, 0.05);
+       border-radius: 12px;
+       padding: 15px;
+       flex: 1;
+   }
+   .mass-control-panel {
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       gap: 10px;
+   }
+   .mass-control-panel input {
+       background: rgba(0, 0, 0, 0.3);
+       border: 1px solid rgba(255, 255, 255, 0.1);
+       color: #fff;
+       border-radius: 6px;
+       padding: 10px;
+       outline: none;
+       font-size: 13px;
+   }
+   .btn-mass {
+       background: #ef4444;
+       color: #fff;
+       border: none;
+       border-radius: 6px;
+       padding: 10px;
+       font-weight: bold;
+       cursor: pointer;
+       transition: background 0.3s;
+   }
+   .btn-mass:hover { background: #dc2626; }
+
+   .analytics-panel h4 { margin-top: 0; margin-bottom: 12px; color: #60a5fa; font-size: 13px; }
+   .analytics-content {
+       display: flex;
+       flex-wrap: wrap;
+       gap: 8px;
+       max-height: 90px;
+       overflow-y: auto;
+   }
+   .analytics-item {
+       background: rgba(96, 165, 250, 0.1);
+       border: 1px solid rgba(96, 165, 250, 0.3);
+       color: #93c5fd;
+       padding: 4px 8px;
+       border-radius: 4px;
+       font-size: 11px;
+       display: flex;
+       gap: 5px;
+   }
+   .item-count { color: #fff; font-weight: bold; }
+
+   .bot-actions {
+       display: flex;
+       gap: 10px;
+   }
+   
+   .btn {
+       flex: 1;
+       padding: 10px;
+       border: none;
+       border-radius: 6px;
+       font-size: 13px;
+       font-weight: 600;
+       cursor: pointer;
+       transition: all 0.2s;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       gap: 6px;
+   }
+   
+   .btn-start {
+       background: rgba(34, 197, 94, 0.15);
+       color: #4ade80;
+   }
+   .btn-start:hover { background: rgba(34, 197, 94, 0.3); }
+   
+   .btn-stop {
+       background: rgba(239, 68, 68, 0.15);
+       color: #f87171;
+   }
+   .btn-stop:hover { background: rgba(239, 68, 68, 0.3); }
+   
+   .btn-del {
+       flex: 0 0 40px;
+       background: transparent;
+       color: #64748b;
+       border: 1px solid rgba(255,255,255,0.05);
+   }
+   .btn-del:hover { background: rgba(239, 68, 68, 0.1); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+   
+   /* =========== Cột Phải (Live Console) =========== */
+   .console-panel {
+       flex: 2;
+       background: rgba(0, 0, 0, 0.4);
+       display: flex;
+       flex-direction: column;
+       border-left: 1px solid rgba(0, 0, 0, 0.5);
+   }
+   
+   .console-header {
+       padding: 20px;
+       border-bottom: 1px solid rgba(255,255,255,0.05);
+       display: flex;
+       justify-content: space-between;
+       align-items: center;
+   }
+   
+   .console-header h2 {
+       font-size: 16px;
+       font-weight: 600;
+       letter-spacing: 1px;
+       color: #94a3b8;
+       display: flex;
+       align-items: center;
+       gap: 8px;
+   }
+   
+   .console-header button {
+       background: transparent;
+       border: 1px solid rgba(255,255,255,0.1);
+       color: #94a3b8;
+       padding: 5px 10px;
+       border-radius: 4px;
+       cursor: pointer;
+       font-size: 12px;
+       transition: 0.2s;
+   }
+   .console-header button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+   
+   .console-window {
+       flex: 1;
+       padding: 20px;
+       overflow-y: auto;
+       font-family: 'Consolas', 'Courier New', Courier, monospace;
+       font-size: 13px;
+       line-height: 1.6;
+       display: flex;
+       flex-direction: column;
+       gap: 6px;
+       /* Đảm bảo chừa chỗ cho thanh input ở dưới */
+       padding-bottom: 10px;
+   }
+   
+   /* --- Thanh Input Chat --- */
+   .console-input-area {
+       display: flex;
+       padding: 15px 20px;
+       gap: 10px;
+       background: rgba(0, 0, 0, 0.2);
+       border-top: 1px solid rgba(255, 255, 255, 0.05);
+   }
+
+   .console-input-area input {
+       flex: 1;
+       background: rgba(255, 255, 255, 0.03);
+       border: 1px solid rgba(255, 255, 255, 0.1);
+       border-radius: 8px;
+       padding: 10px 15px;
+       color: #fff;
+       outline: none;
+       font-family: 'Consolas', 'Courier New', monospace;
+       transition: border-color 0.2s;
+   }
+   
+   .console-input-area input:focus {
+       border-color: #7928ca;
+   }
+   
+   .console-input-area input:disabled {
+       background: rgba(0, 0, 0, 0.4);
+       color: #64748b;
+       cursor: not-allowed;
+   }
+   
+   .console-input-area button {
+       width: 45px;
+       background: #4ade80;
+       border: none;
+       border-radius: 8px;
+       color: #0f111a;
+       font-size: 16px;
+       cursor: pointer;
+       transition: all 0.2s;
+   }
+   
+   .console-input-area button:hover:not(:disabled) {
+       background: #22c55e;
+       transform: translateY(-2px);
+   }
+   
+   .console-input-area button:disabled {
+       background: rgba(255, 255, 255, 0.05);
+       color: #64748b;
+       cursor: not-allowed;
+   }
+
+   .log-entry {
+       padding: 4px 8px;
+       border-radius: 4px;
+       word-wrap: break-word;
+       animation: fadeIn 0.3s ease;
+   }
+   
+   @keyframes fadeIn {
+       from { opacity: 0; transform: translateY(5px); }
+       to { opacity: 1; transform: translateY(0); }
+   }
+   
+   .log-time { color: #64748b; margin-right: 8px; font-size: 11px; }
+   .log-id { color: #c084fc; font-weight: bold; margin-right: 8px; }
+   
+   .log-entry.system { color: #facc15; }
+   .log-entry.error { color: #f87171; background: rgba(239, 68, 68, 0.1); }
+   .log-entry.success { color: #4ade80; }
+
+   /* Bộ lọc Log theo Bot */
+   .console-window[data-filter-id] .log-entry[data-bot-id] {
+       display: none;
+   }
+   .console-window[data-filter-id="acc-1"] .log-entry[data-bot-id="acc-1"],
+   .console-window[data-filter-id="acc-2"] .log-entry[data-bot-id="acc-2"],
+   .console-window[data-filter-id="acc-3"] .log-entry[data-bot-id="acc-3"],
+   .console-window[data-filter-id="acc-4"] .log-entry[data-bot-id="acc-4"],
+   .console-window[data-filter-id="acc-5"] .log-entry[data-bot-id="acc-5"],
+   .console-window[data-filter-id="acc-6"] .log-entry[data-bot-id="acc-6"],
+   .console-window[data-filter-id="acc-7"] .log-entry[data-bot-id="acc-7"],
+   .console-window[data-filter-id="acc-8"] .log-entry[data-bot-id="acc-8"],
+   .console-window[data-filter-id="acc-9"] .log-entry[data-bot-id="acc-9"],
+   .console-window[data-filter-id="acc-10"] .log-entry[data-bot-id="acc-10"] {
+       display: block; 
+   }
+   /* Mẹo CSS khi data-filter-id khớp với data-bot-id sẽ match qua các selector trên, nhưng để xịn hơn và không giới hạn số bot, ta dùng JS gán class / ẩn hiện thủ công, hoặc dùng biến. Tuy nhiên có thể dùng thuộc tính style display trực tiếp bằng JS cho gọn. Dù vậy vì em đã setup JS bên \`main.js\` để làm việc này. Ở đây cứ ẩn mặc định nếu có thuộc tính filter */
+   .console-window.is-filtering .log-entry[data-bot-id] {
+       display: none;
+   }
+   .console-window.is-filtering .log-entry.show-log {
+       display: block;
+   }
