@@ -855,7 +855,7 @@ io.on('connection', (socket) => {
     socket.emit('bot_status', { status: 'connected' });
 });
 
-const PORT = 3001;
+const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`⛏️  MINECRAFT AFK ENGINE ĐÃ CHẠY TẠI PORT ${PORT}`);
