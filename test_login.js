@@ -19,7 +19,7 @@ bot._client.on('add_resource_pack', (data) => {
     console.log("Custom RP Handler: received add_resource_pack", data);
     
     try {
-        const uuidBuffer = new UUID(data.uuid);
+        const uuidBuffer = Buffer.from(data.uuid.replace(/-/g, ''), 'hex');
         
         console.log("Sending ACCEPTED (3) status...");
         bot._client.write('resource_pack_receive', {

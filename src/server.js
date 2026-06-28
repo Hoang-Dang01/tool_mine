@@ -397,28 +397,19 @@ function startBot(botId, username, afkSpotId) {
 
     bot._client.on('add_resource_pack', (data) => {
         try {
-            const uuidBuffer = new UUID(data.uuid);
             // Step 1: Send ACCEPTED (3)
             bot._client.write('resource_pack_receive', {
-                uuid: uuidBuffer,
+                uuid: data.uuid,
                 result: 3
             });
             
-            // Step 2: Send DOWNLOADED (4) after 200ms
+            // Step 2: Send SUCCESSFULLY_LOADED (0) after 250ms
             setTimeout(() => {
                 bot._client.write('resource_pack_receive', {
-                    uuid: uuidBuffer,
-                    result: 4
+                    uuid: data.uuid,
+                    result: 0
                 });
-                
-                // Step 3: Send SUCCESSFULLY_LOADED (0) after another 200ms
-                setTimeout(() => {
-                    bot._client.write('resource_pack_receive', {
-                        uuid: uuidBuffer,
-                        result: 0
-                    });
-                }, 200);
-            }, 200);
+            }, 250);
         } catch (err) {
             console.error("Resource pack response error:", err);
         }

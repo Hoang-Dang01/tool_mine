@@ -4,8 +4,6 @@
         "username": "Acetazolamid",
         "pass": "Dat.2512",
         "mode": "random",
-        "pvpEnabled": false,
-        "afkSpotId": "",
         "pvStart": 2,
         "pvEnd": 5,
         "uptimeOffset": 43200000
