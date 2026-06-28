@@ -1,0 +1,18 @@
+---
+description: "Task Breakdown Vector for Planner Agent"
+globs: ["*plan*", "*roadmap*", "*task*"]
+---
+# TASK BREAKDOWN VECTOR
+
+## 1. GRANULARITY DISCIPLINE
+When breaking down a large feature into actionable steps for the Implementers:
+- **Rule 1:** A step MUST NOT take more than 1 cognitive context to complete (e.g., Step 1: DB Schema, Step 2: API Route, Step 3: UI Component). Do not mix UI and DB tasks into a single step.
+- **Rule 2:** Steps MUST be ordered by dependency. You cannot build the UI before the API contract is defined.
+
+## 2. THE HANDOFF PROTOCOL
+For each step in your plan, you MUST provide:
+- **Objective:** What needs to be built.
+- **Target Files:** Exactly which files need to be created or modified.
+- **Acceptance Criteria:** How the Implementer will know they are done.
+- **Validation Ownership:** Explicitly specify WHICH agent verifies this step (e.g., "Requires Tester validation", "Requires Security audit", "Requires Reviewer approval").
+- **Constraints:** Specific rules (e.g., "Must use DB Transaction", "Must handle hydration failure").

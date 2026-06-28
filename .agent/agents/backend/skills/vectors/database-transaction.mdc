@@ -1,0 +1,13 @@
+---
+description: "Database Vector: Transactions, Concurrency, and Idempotency."
+globs: ["*.sql", "*repository*", "*model*", "*db*"]
+---
+# DATABASE & TRANSACTION VECTOR
+
+## 1. TRANSACTION INTEGRITY
+- **Transactions:** All state mutations MUST be wrapped in strict database transactions. Prevent partial commits.
+- **Idempotency:** All state-mutating operations MUST be idempotent. A retry should never corrupt data.
+
+## 2. CONCURRENCY CONTROL
+- Always use row-level locking (`SELECT FOR UPDATE`) or optimistic concurrency control (version checks) for critical state mutations.
+- Never assume that sequential read-then-write operations are safe from race conditions.

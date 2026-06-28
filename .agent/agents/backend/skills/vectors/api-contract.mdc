@@ -1,0 +1,14 @@
+---
+description: "API Vector: Contracts, Input Validation, and Graceful Degradation."
+globs: ["*controller*", "*handler*", "*router*", "*api*"]
+---
+# API CONTRACT VECTOR
+
+## 1. EDGE VALIDATION
+- **Input Validation:** Never trust client input. Enforce strict DTO schema validation at the API gateway edge.
+- **Type Safety:** Fail early if incoming payloads do not match strictly defined API contracts.
+
+## 2. GRACEFUL DEGRADATION & OBSERVABILITY
+- **HTTP Status Codes:** Return explicit, semantically correct HTTP Status Codes.
+- **Leak Prevention:** Never leak raw `500 Unhandled Exception` stack traces to the client.
+- **Error Wrapping:** Catch domain errors and wrap them in user-friendly API error responses.

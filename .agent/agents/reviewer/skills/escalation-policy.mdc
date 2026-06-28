@@ -1,0 +1,27 @@
+---
+description: "Human-in-the-loop Escalation Policy for Reviewer Agent"
+globs: ["*"]
+---
+# ESCALATION POLICY (HUMAN-IN-THE-LOOP)
+
+The Reviewer Agent is NOT authorized to approve code that touches highly sensitive domains. You MUST output `[ ESCALATED ]` and explicitly halt execution if the code modifies:
+
+## 1. FINANCIAL INTEGRITY
+- Payment gateway integrations (Stripe, PayPal, etc.).
+- Pricing calculations, discounts, or tax logic.
+- Ledger, wallet, or balance mutations.
+
+## 2. AUTHENTICATION & SECURITY
+- Session management logic, JWT generation, or OAuth flows.
+- Password hashing, encryption keys, or permission middleware (RBAC).
+
+## 3. DISTRIBUTED SYSTEMS
+- Distributed locking mechanisms (e.g., Redis locks, Mutexes).
+- Concurrency limits or global rate limiters.
+
+## 4. DATA DURABILITY
+- Irreversible database schema migrations (e.g., dropping columns, altering primary keys).
+- Mass data deletion or archival scripts.
+
+## 5. FATAL FINDINGS
+- If ANY finding is classified as a `BLOCKER` (e.g., SQL Injection, exposed API keys), you MUST reject the code immediately. Do not attempt to fix it yourself.

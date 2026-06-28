@@ -1,0 +1,18 @@
+---
+description: "UI/UX Rendering Vector: Hydration, Accessibility, and Form Integrity."
+globs: ["*.css", "*.tsx", "*.jsx", "components/**", "pages/**"]
+---
+# UI/UX RENDERING VECTOR
+
+## 1. HYDRATION & RENDER OPTIMIZATION
+- **Hydration Safety:** Guard all browser-only APIs (`window`, `localStorage`, `Math.random()`) with `useEffect` or `typeof window !== 'undefined'` to prevent SSR mismatch crashes.
+- **Re-render Optimization:** Avoid unnecessary re-renders caused by unstable object/function references. Expensive computations MUST be memoized when render frequency is high.
+- **Layout Shift (CLS):** Dynamic media (images, ads) and lazy-loaded components MUST define explicit dimensions or aspect ratios before loading.
+
+## 2. ACCESSIBILITY & UX COMPLETENESS
+- **Peripheral States:** NEVER design a view without explicitly accounting for Loading, Error, and Empty states.
+- **Semantic HTML:** Interactive elements MUST use semantic tags (`<button>`, `<a>`) and remain keyboard-navigable. DO NOT attach `onClick` to `<div>` elements without appropriate ARIA roles.
+- **Transition Safety:** Route transitions MUST preserve loading continuity. Avoid abrupt UI flashes or layout resets.
+
+## 3. FORM INTEGRITY
+- Forms MUST preserve user input during recoverable failures. Validation errors MUST be explicit and field-specific. NEVER silently discard user-entered data.

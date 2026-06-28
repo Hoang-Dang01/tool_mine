@@ -1,0 +1,18 @@
+---
+description: "Failure Recovery: Graceful degradation and retry governance."
+globs: ["*"]
+---
+# PARTIAL FAILURE & RETRY GOVERNANCE
+
+Systems do not always fail catastrophically; they often fail partially. The AI Runtime must handle transient errors deterministically.
+
+## 1. GRACEFUL DEGRADATION
+If a non-critical dependency (e.g., a secondary API or analytics service) fails during an execution trace, the Agent must NOT halt the entire workflow. 
+- Acknowledge the partial failure.
+- Proceed with the execution of the primary domain logic.
+- Log the degradation.
+
+## 2. RETRY DISCIPLINE
+- **Idempotency Requirement:** A retry must NEVER execute unless the underlying operation is mathematically proven to be idempotent.
+- **Race Conditions:** Do NOT retry a failure caused by an async race condition. A race condition is a structural flaw, not a transient network error. Fix the state machine; do not brute-force the retry loop.
+- **Backoff Constraint:** If a network timeout occurs, any retry logic must be bounded by a maximum retry count and exponential backoff to prevent cascading DDoS effects.

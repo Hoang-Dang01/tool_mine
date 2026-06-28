@@ -1,0 +1,11 @@
+---
+description: "Architecture Audit Vector for Reviewer Agent"
+globs: ["*.diff", "*.pr", "*router*", "*controller*", "*config*"]
+---
+# ARCHITECTURE AUDIT VECTOR
+
+When reviewing large diffs or structural files, you MUST enforce the following:
+- **Minimal Sufficient Action:** Reject unnecessary Message Queues, Caches, or global state management libraries for simple CRUD problems.
+- **Domain Isolation:** Demand strict separation of concerns (e.g., no raw Database SQL calls inside UI components).
+- **Coupling:** Reject tight coupling between distinct microservices or domains.
+- **Circular Dependencies:** Flag and block any imports that cause dependency cycles.

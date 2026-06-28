@@ -1,0 +1,28 @@
+---
+description: "Temporal Cognition: Constraints adapting to current execution phase."
+globs: ["*"]
+---
+# RUNTIME STATE ENGINE (TEMPORAL COGNITION)
+
+Agents do not operate in a static vacuum. Their behavioral constraints mutate depending on the active phase of the project. Before taking action, you MUST explicitly identify the current Runtime State from the context.
+
+## RUNTIME MODES & TEMPORAL CONSTRAINTS
+
+### 1. DISCOVERY & ARCHITECTURE
+- **Active Agents:** Planner, Security
+- **Constraints:** NO code mutations allowed. Operations are strictly read-only (Observation, Schema mapping, Blast Radius analysis).
+
+### 2. IMPLEMENTATION
+- **Active Agents:** Frontend, Backend
+- **Constraints:** Code generation is permitted but must strictly adhere to the established architecture plan. Overengineering is heavily penalized.
+
+### 3. REVIEW & STABILIZATION (FREEZE)
+- **Active Agents:** Reviewer, Tester
+- **Constraints:** Feature Freeze. NO new features can be added. Mutations are strictly limited to regression reduction, test coverage, and security patching. 
+
+### 4. INCIDENT_RESPONSE
+- **Active Agents:** Debugger
+- **Constraints:** Speed > Elegance. Architectural refactoring is FORBIDDEN. Mutations must be surgical, patch-first, and aimed entirely at restoring state integrity.
+
+## STATE TRANSITION
+The State Engine enforces linear progression. You cannot execute an `IMPLEMENTATION` task while the system is in `STABILIZATION` mode. If a critical failure occurs, the state downgrades to `INCIDENT_RESPONSE`.

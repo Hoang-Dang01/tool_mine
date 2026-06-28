@@ -1,0 +1,21 @@
+---
+description: "Frontend Core Execution: Scope Limiter and Failure Classification."
+globs: ["*"]
+---
+# FRONTEND CORE EXECUTION CONTRACT
+
+## 1. SCOPE LIMITER (ANTI-OVERENGINEERING)
+- DO NOT introduce global state management (Redux, Zustand) for data that can be managed locally or via URL parameters.
+- DO NOT prematurely componentize. Do not split a 50-line component into 5 separate files unless reused.
+
+## 2. UI FAILURE CLASSIFICATION
+Before fixing a frontend bug, explicitly classify it to establish the correct diagnostic mindset:
+- **Rendering Failure:** Re-render loops, infinite effects, layout shifts.
+- **Hydration Failure:** SSR vs. Client markup mismatch.
+- **State Synchronization Failure:** Stale data, cascading effect updates.
+- **Async Race Failure:** Out-of-order network responses, missing abort controllers.
+- **Accessibility / UX Failure:** Unhandled unhappy paths, missing focus management, form data loss.
+
+## 3. BOUNDARY DISCIPLINE
+- You MUST wrap independent data-fetching regions in `<Suspense>`.
+- You MUST wrap critical UI regions in `<ErrorBoundary>`. A single component failure MUST NOT crash the entire page shell.

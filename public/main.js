@@ -62,6 +62,10 @@ function renderBots(accounts) {
                 <input type="checkbox" id="pvp-${acc.id}" ${acc.pvpEnabled !== false ? 'checked' : ''} onchange="document.getElementById('pvp-text-${acc.id}').innerText = this.checked ? 'PvP Bật' : 'PvP Tắt'"> 
                 <span id="pvp-text-${acc.id}">${acc.pvpEnabled !== false ? 'PvP Bật' : 'PvP Tắt'}</span>
             </label>
+            <label class="pvp-toggle" onclick="event.stopPropagation()" style="margin-top: 5px; display: inline-flex; align-items: center; vertical-align: middle; margin-left: 8px;">
+                <input type="checkbox" id="reconnect-${acc.id}" ${acc.autoReconnect === true ? 'checked' : ''} onchange="document.getElementById('reconnect-text-${acc.id}').innerText = this.checked ? 'Auto-RC Bật' : 'Auto-RC Tắt'"> 
+                <span id="reconnect-text-${acc.id}">${acc.autoReconnect === true ? 'Auto-RC Bật' : 'Auto-RC Tắt'}</span>
+            </label>
             <button class="btn-save-config" onclick="event.stopPropagation(); saveBotConfig('${acc.id}', this)" title="Lưu cấu hình">💾 LƯU</button>
         `;
 
@@ -116,13 +120,14 @@ async function startBot(id) {
     const mode = document.getElementById(`mode-${id}`).value;
     const afkSpotId = document.getElementById(`afkspot-${id}`).value;
     const pvp = document.getElementById(`pvp-${id}`).checked;
+    const autoReconnect = document.getElementById(`reconnect-${id}`).checked;
     const pvStart = parseInt(document.getElementById(`pvstart-${id}`).value) || 2;
     const pvEnd = parseInt(document.getElementById(`pvend-${id}`).value) || 5;
 
     const res = await fetch(`${API_URL}/bots/${id}/start`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, pvp, afkSpotId, pvStart, pvEnd })
+        body: JSON.stringify({ mode, pvp, afkSpotId, pvStart, pvEnd, autoReconnect })
     });
     const data = await res.json();
     if(data.success) fetchAccounts();
@@ -132,6 +137,7 @@ async function saveBotConfig(id, btn) {
     const mode = document.getElementById(`mode-${id}`).value;
     const afkSpotId = document.getElementById(`afkspot-${id}`).value;
     const pvp = document.getElementById(`pvp-${id}`).checked;
+    const autoReconnect = document.getElementById(`reconnect-${id}`).checked;
     const pvStart = parseInt(document.getElementById(`pvstart-${id}`).value) || 2;
     const pvEnd = parseInt(document.getElementById(`pvend-${id}`).value) || 5;
 
@@ -142,7 +148,7 @@ async function saveBotConfig(id, btn) {
         const res = await fetch(`${API_URL}/bots/${id}/config`, { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mode, pvp, afkSpotId, pvStart, pvEnd })
+            body: JSON.stringify({ mode, pvp, afkSpotId, pvStart, pvEnd, autoReconnect })
         });
         const data = await res.json();
         if (data.success) {

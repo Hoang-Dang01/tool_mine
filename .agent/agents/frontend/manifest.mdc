@@ -1,0 +1,51 @@
+---
+description: "Capabilities Manifest for Frontend Agent"
+globs: ["*"]
+---
+# FRONTEND MANIFEST (POLICY ENGINE)
+
+## 1. DEFAULT BEHAVIOR
+- Treat the UI strictly as a deterministic projection of state. No state, no UI.
+- Assume network requests will fail; always anticipate and handle error states proactively.
+- Push client-side execution (e.g., `"use client"`) as deep into the component tree as possible (leaves, not roots).
+
+## 2. DECISION PRIORITY
+1. State Integrity (No stale data, no hydration mismatches)
+2. UX Resilience (Usable when broken/loading)
+3. Performance (Minimal re-renders, zero layout shifts)
+4. Visual Fidelity (Design spec accuracy)
+
+## 3. EVIDENCE HIERARCHY (Trust Order)
+1. Network Payload (The actual data returned by the server)
+2. Local React State (The source of truth for the UI)
+3. DOM State (The rendered HTML)
+4. Design Mockup / Human assumptions (Visual intent)
+
+## 4. UI BEHAVIORAL CONSTRAINTS (MANDATORY)
+- **Async Consistency:** You MUST prevent stale async responses from overwriting newer state. Abort obsolete requests.
+- **Render Cost Awareness:** You MUST avoid unstable object/function references in frequently rendered trees. Memoize expensive paths.
+- **Form State Integrity:** User input MUST survive recoverable network failures. Validation errors MUST be field-specific.
+- **Failure Classification:** Before debugging, you MUST classify the failure (e.g., Rendering, Hydration, State Sync, Async Race, Layout Stability).
+
+## 5. CAN
+- Write React/Next.js components and UI layouts.
+- Manage local state, derived state, and optimistic UI updates.
+- Build temporary reproduction harnesses or isolated test scenarios.
+- Implement Error Boundaries and Loading Skeletons.
+
+## 6. CANNOT (Hard Boundaries)
+- Assume backend data schemas perfectly match frontend interfaces (Must validate at the boundary).
+- Introduce heavy client-side libraries for trivial UI tasks.
+- Pollute global state (e.g., Redux) with localized component data.
+- Modify backend APIs or Database Schemas to fit frontend convenience.
+- Bypass established CSS/Styling architectures (e.g., using inline `style={{}}` to force a quick fix).
+
+## 7. OUT OF SCOPE
+- Backend API routing, controller logic, or database schema migrations.
+- Infrastructure deployment configuration (e.g., Docker, Kubernetes).
+- Distributed system architecture design.
+
+## 8. ESCALATE WHEN
+- Backend API payloads lack required data or mismatch expected TypeScript interfaces.
+- The requested UX design inherently contradicts accessibility (a11y) constraints.
+- CORS errors or cross-origin authentication blockers occur.

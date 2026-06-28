@@ -1,0 +1,29 @@
+---
+description: "Review Output Contract for Reviewer Agent"
+globs: ["*"]
+---
+# REVIEW OUTPUT CONTRACT
+
+You MUST structure your final review using the exact markdown format below. Do not use JSON. Do not deviate from this structure.
+
+## 1. REVIEW STATUS
+Must be exactly one of:
+- `[ APPROVED ]` (Code is safe to merge. No Blocker/Major findings.)
+- `[ APPROVED_WITH_WARNINGS ]` (Safe to merge, but contains Minor/Advisory notes.)
+- `[ REJECTED ]` (Contains Blocker or Major findings. Must be rewritten.)
+- `[ ESCALATED ]` (Triggers the Escalation Policy. Human review required.)
+
+## 2. FINDINGS
+For each finding, use the following format. Obey your Review Budget limits.
+- **Severity:** [BLOCKER | MAJOR | MINOR | ADVISORY]
+- **Vector:** [Security | State | Architecture | Resource]
+- **Location:** `filename.ts:LineNumber`
+- **Evidence:** Briefly explain why this is a risk based on the code.
+- **Blast Radius:** What else will break if this code is deployed?
+- **Required Action:** Specific instruction for the Implementer/User to fix it.
+
+## 3. FINAL RISK SUMMARY
+Provide a concise 3-bullet summary:
+- **Safe to merge?** (Yes/No)
+- **Regression risk?** (High/Medium/Low)
+- **Architectural impact?** (High/Medium/Low)

@@ -1,0 +1,17 @@
+---
+description: "E2E Testing Vector for Tester Agent"
+globs: ["*e2e*", "*cypress*", "*playwright*"]
+---
+# E2E TESTING VECTOR
+
+## 1. SELECTOR RESILIENCE
+- NEVER use fragile DOM selectors like `div > span:nth-child(2)`.
+- You MUST use data attributes (e.g., `data-testid="submit-btn"`) or accessibility roles (e.g., `getByRole('button', { name: 'Submit' })`) to prevent tests from breaking during UI refactors.
+
+## 2. ASYNC STABILITY
+- E2E tests run in a real browser where network and rendering are asynchronous.
+- You MUST use built-in auto-waiting mechanisms (e.g., Playwright's `expect().toBeVisible()`).
+- DO NOT use hardcoded `sleep(5000)`. Wait for specific network requests to resolve or elements to appear in the DOM.
+
+## 3. STATE PREPARATION
+- Prefer setting up test state directly via Database inserts or API calls rather than clicking through the UI to set up a scenario. UI clicks should only be used to test the actual user journey being evaluated.

@@ -1,0 +1,21 @@
+---
+description: "Backend Core Execution: Scope Limiter and Priority Hierarchy."
+globs: ["*"]
+---
+# BACKEND CORE EXECUTION CONTRACT
+
+## 1. SCOPE LIMITER (ANTI-OVERENGINEERING)
+- Prefer minimal architectural expansion.
+- DO NOT introduce message queues, distributed caches, or complex patterns (Kafka, Redis, CQRS, Event Sourcing) for simple CRUD tasks unless explicitly requested.
+
+## 2. PRIORITY HIERARCHY
+When resolving architectural conflicts or making design trade-offs, strictly follow this order:
+1. **Data Integrity** (Zero data loss, strict constraints)
+2. **Correctness** (Accurate business logic)
+3. **Reliability** (Idempotency, failure recovery)
+4. **Observability** (Structured logging, tracing)
+5. **Performance** (Optimized queries, latency)
+
+## 3. LOGIC ISOLATION & TIMEOUTS
+- **Logic Isolation:** Do NOT embed business logic inside routing controllers. Use service layers.
+- **Timeouts:** All external async I/O operations MUST define explicit timeout boundaries. Never block indefinitely.

@@ -1,0 +1,41 @@
+---
+description: "Global Runtime Mechanics & Escalation"
+globs: ["*"]
+---
+# GLOBAL RUNTIME GOVERNANCE
+
+This module acts as the Global Execution Governor for all specialized Agents.
+
+## 1. COGNITIVE ISOLATION
+- Never load or reference unrelated cognitive domains. 
+- Prefer specialist routing over general reasoning (e.g., defer to the Security Agent for Threat Modeling, do not attempt to evaluate it generically).
+
+## 2. EXECUTION ECONOMICS & BUDGET
+- **Stop Conditions:** Abort execution immediately if sufficient evidence or context is unavailable. Do not attempt to "guess" or hallucinate missing dependencies.
+- **Blast Radius:** Preserve minimal blast radius in all mutations. Do not proactively refactor files or components that are not strictly necessary for the localized task.
+
+## 3. ESCALATION MECHANICS
+- Escalate to the Human Operator instead of hallucinating.
+- If a task requires violating any immutable cognitive law, you MUST halt and request Human approval.
+- Maintain strict domain boundaries during handoffs (e.g., The Planner must not write implementation code; the Reviewer must not fix its own findings).
+
+## 4. EXECUTION LIFECYCLE
+All execution must follow a strict sequential protocol:
+1. **Observe:** Gather facts without judgment.
+2. **Classify:** Determine the mutation impact (see Mutation Classification).
+3. **Verify:** Check test coverage and constraints.
+4. **Mutate:** Apply the minimal sufficient action.
+5. **Validate:** Execute tests to prove correctness. Skipping verification invalidates the mutation.
+
+## 5. MUTATION CLASSIFICATION
+Changes must be explicitly classified before execution:
+- **OBSERVATION:** Reading logs, traces, or code.
+- **DIAGNOSTIC:** Running test harnesses or probing APIs.
+- **LOCALIZED PATCH:** Modifying a single isolated function or component.
+- **STRUCTURAL CHANGE:** Modifying schema, DB queries, or API payloads.
+- **ARCHITECTURAL MIGRATION:** Changing core technology, auth flows, or topology.
+Higher-impact mutations require exponentially stronger evidence and higher escalation thresholds.
+
+## 6. HUMAN AUTHORITY (OVERRIDE PROTOCOL)
+The Human Operator may override architectural preferences, but may NOT override immutable safety or data integrity constraints silently.
+All human overrides that violate established patterns must be explicitly acknowledged by the Agent before proceeding.

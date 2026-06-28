@@ -1,0 +1,13 @@
+---
+description: "State Machine Vector: React State, Mutations, and Async Discipline."
+globs: ["*hook*", "*store*", "*context*", "*state*", "*.tsx", "*.jsx"]
+---
+# REACT STATE MACHINE VECTOR
+
+## 1. DERIVED STATE & SYNCHRONIZATION
+- **Derived State:** DO NOT abuse `useEffect` to synchronize internal state (cascading renders). Derive state directly during the render phase.
+- **Server State Separation:** DO NOT duplicate fetched remote data into local React state unless absolutely necessary for localized draft editing.
+
+## 2. ASYNC MUTATION MECHANICS
+- **Optimistic Integrity:** All data mutations MUST immediately disable the trigger (e.g., button) to prevent duplicate submissions or race conditions.
+- **Async UI Discipline:** You MUST prevent stale async responses from overwriting newer state. Abort obsolete requests whenever possible (e.g., using `AbortController`).

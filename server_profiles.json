@@ -1,0 +1,14 @@
+{
+  "luckyvn": {
+    "host": "phasecore.pikamc.vn",
+    "port": 25230,
+    "version": "1.21.10",
+    "fakeHost": "",
+    "loginDelayMs": 3000,
+    "antibotTriggers": [],
+    "antibotFreezeDurationMs": 0,
+    "targetItems": [
+      "diamond"
+    ]
+  }
+}

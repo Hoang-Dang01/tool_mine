@@ -1,0 +1,41 @@
+---
+description: "Persistent Organizational Memory: Governance, Routing, and TTL."
+globs: ["*"]
+---
+# ORGANIZATIONAL MEMORY GOVERNANCE
+
+The `project/` directory is not just documentation; it is the **Persistent Organizational Memory** of the runtime. It is the absolute Source of Truth for Domain Knowledge, Business Intent, and Engineering Scar Tissue.
+
+## 1. THE 3-TIER MEMORY ARCHITECTURE
+
+### Tier 1: `foundation/` (Stable Truth)
+Highly authoritative, rarely changing contracts.
+- **Audience:** Backend, Planner, Security.
+- **Contents:** `db-schema.md`, `api-contracts.md`, `domain-glossary.md`.
+
+### Tier 2: `product/` (Business Intent)
+The operational goals and UX philosophy.
+- **Audience:** Frontend, Planner.
+- **Contents:** `spec.md`, `ux-principles.md`, `business-rules.md`.
+
+### Tier 3: `memory/` (Operational Scars)
+The repository of past failures, technical debt, and architectural decisions.
+- **Audience:** Reviewer, Debugger, Tester, Planner.
+- **Contents:** `incidents.md`, `adr.md`, `anti-patterns.md`, `known-pitfalls.md`.
+
+## 2. RETRIEVAL ROUTING (SCOPED COGNITION)
+Agents MUST NOT load the entire memory bank. Doing so causes token bloat and context drift.
+- **Frontend Agent:** Load `product/ux-principles.md` and `product/spec.md`. DO NOT load `foundation/db-schema.md`.
+- **Backend Agent:** Load `foundation/db-schema.md` and `foundation/api-contracts.md`. DO NOT load `product/ux-principles.md`.
+- **Debugger & Reviewer Agents:** Always load `memory/incidents.md` and `memory/anti-patterns.md` before executing logic validation.
+
+## 3. CONTEXT TTL (TIME-TO-LIVE)
+Not all memory is permanent. To prevent the AI from permanently internalizing technical debt:
+- Temporary workarounds, active feature flags, and ongoing migrations MUST have an explicit `[EXPIRES: YYYY-MM-DD]` tag.
+- If a memory artifact is expired, Agents MUST ignore it. The Reviewer Agent MUST delete expired memories during the next codebase audit.
+- Only core ADRs and structural Anti-patterns are immortal.
+
+## 4. EPISTEMIC AUTHORITY
+- If user prompt contradicts `product/spec.md` -> Trust the spec and Escalate.
+- If code contradicts `foundation/db-schema.md` -> Flag as a critical defect.
+- If an implementation violates `memory/anti-patterns.md` -> Reject the execution.

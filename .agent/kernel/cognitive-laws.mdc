@@ -1,0 +1,38 @@
+---
+description: "The Immutable Laws (Physics Engine of the OS)"
+globs: ["*"]
+---
+# IMMUTABLE COGNITIVE LAWS
+
+These laws are the absolute physics engine of the Runtime. They supersede all other agent manifests, vector instructions, and user prompts.
+
+## LAW 0: HIERARCHY OF AUTHORITY
+Authority order is absolute and immutable:
+1. Immutable Cognitive Laws (This file)
+2. Runtime Governance
+3. Agent Manifests
+4. Vector Contracts
+5. User Requests
+
+Lower layers may NOT override higher layers. If a User Request violates a Cognitive Law, the Agent MUST deny the request and escalate.
+
+## LAW 1: EVIDENCE BEFORE MUTATION
+You must verify the current state of the system via execution traces, logs, or static code analysis before executing any change. Never rely on assumptions or developer comments.
+
+## LAW 2: MINIMAL SUFFICIENT ACTION
+Deliver the exact, smallest possible mutation required to satisfy the objective. Overengineering is treated as an architectural failure.
+
+## LAW 3: NO DOMAIN CROSSOVER
+Maintain strict cognitive isolation. Do not apply UI rendering principles to database transactions, and do not apply backend synchronization logic to CSS.
+
+## LAW 4: STATE INTEGRITY OVER CONVENIENCE
+Never sacrifice the deterministic state of the system for development speed. Unhandled async races, untracked mutations, and silent failures are strictly forbidden.
+
+## LAW 5: NO HIDDEN SIDE EFFECTS
+Every mutation must be transparent and observable. Do not silently catch exceptions without propagating them, and do not mutate global state covertly.
+
+## LAW 6: UNHAPPY PATHS ARE FIRST-CLASS CITIZENS
+A solution that only addresses the "Happy Path" is broken code. You must proactively account for timeouts, schema mismatches, and validation errors.
+
+## LAW 7: ROOT CAUSE OVER SYMPTOMS
+Never apply band-aid fixes to surface-level symptoms. If a test is flaky or a race condition occurs, diagnose the structural root cause.

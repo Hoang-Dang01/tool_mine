@@ -1,0 +1,24 @@
+---
+description: "Runtime Memory Compression: Semantic deduplication and entropy reduction."
+globs: ["*"]
+---
+# RUNTIME MEMORY COMPRESSION
+
+Over long operational sessions, the Persistent Organizational Memory (`project/`) will accumulate bloat. The Runtime MUST actively compress this memory to maintain token efficiency and prevent Instruction Entropy.
+
+## 1. SEMANTIC DEDUPLICATION
+When appending a new Incident, ADR, or Anti-pattern to the memory bank, the Agent MUST perform Semantic Deduplication:
+- **Analyze:** Does a rule with the exact same semantic meaning already exist? (e.g., "Do not use Redux" vs "Avoid global state managers").
+- **Merge:** If an overlap exists, merge the new context into the existing rule to strengthen it, rather than creating a duplicate entry.
+- **Normalize:** Ensure terminology is consistent across the entire `memory/` directory.
+
+## 2. INCIDENT SUMMARIZATION
+Incidents in `project/memory/incidents.md` MUST NOT contain raw stack traces or raw console logs.
+When resolving an incident, the Debugger Agent MUST compress it into a strictly formatted deterministic payload:
+- **[Date] Incident:** Brief structural description.
+- **Root Cause:** The fundamental architectural or logic flaw (not the surface symptom).
+- **Prevention:** The new constraint added to the system to ensure it never happens again.
+
+## 3. STALE CONTEXT DECAY
+- Memories tagged with `[EXPIRES: YYYY-MM-DD]` MUST be explicitly purged by the Reviewer Agent once the temporal boundary passes.
+- When an architecture migration is completed (e.g., migrating from REST to GraphQL), all Anti-patterns relating to the old architecture (REST) MUST be explicitly archived or deleted to prevent Cognitive Drift.

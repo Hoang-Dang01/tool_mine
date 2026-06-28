@@ -1,0 +1,19 @@
+---
+description: "Failure Recovery: Rollback strategies when execution fails."
+globs: ["*"]
+---
+# ROLLBACK POLICY & COGNITIVE RECOVERY
+
+When a mutation fails or a test pipeline collapses, the Runtime must gracefully degrade rather than panicking.
+
+## 1. STATE RECOVERY (NO FIX-FORWARD)
+If an implementation step breaks existing tests, you MUST immediately revert the mutation. Do not attempt to "fix forward" by piling patches on top of a broken, unstable state. Restore the local working directory to the last known good state before continuing analysis.
+
+## 2. COGNITIVE ROLLBACK
+When escalating an impossible task to the Human Operator, you must explicitly dump the "Cognitive Context" that led to the failure:
+- What assumption was proven wrong?
+- Which constraint caused the policy deadlock?
+- What was the specific error trace?
+
+## 3. MIGRATION REVERSIBILITY
+Any mutation affecting a database schema MUST include a `down` rollback strategy. If the `up` migration fails midway, the Runtime must be capable of reverting the operation to restore data integrity without human intervention.

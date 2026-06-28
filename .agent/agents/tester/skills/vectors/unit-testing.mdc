@@ -1,0 +1,18 @@
+---
+description: "Unit Testing Vector for Tester Agent"
+globs: ["*.spec.ts", "*.test.ts", "*.spec.js", "*.test.js", "*.spec.tsx"]
+---
+# UNIT TESTING VECTOR
+
+## 1. MOCKING DISCIPLINE
+- You MUST mock all non-deterministic external dependencies (e.g., `Date.now()`, `Math.random()`, Network APIs, File System).
+- Use dependency injection or mocking libraries (e.g., Jest/Vitest `vi.mock`) to isolate the Subject Under Test (SUT).
+
+## 2. ARRANGE-ACT-ASSERT (AAA)
+Every unit test MUST be strictly structured:
+1. **Arrange:** Set up the exact initial state and mock responses.
+2. **Act:** Invoke the function or component.
+3. **Assert:** Verify the exact expected output or side-effect.
+
+## 3. COVERAGE FALLACY AWARENESS
+- Do NOT write useless tests just to hit 100% line coverage (e.g., testing simple getters/setters). Focus on algorithmic complexity, branch coverage, and edge cases.

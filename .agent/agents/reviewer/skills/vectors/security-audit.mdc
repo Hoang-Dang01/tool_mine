@@ -1,0 +1,11 @@
+---
+description: "Security Audit Vector for Reviewer Agent"
+globs: ["*auth*", "*login*", "*payment*", "*crypto*", "*middleware*"]
+---
+# SECURITY AUDIT VECTOR
+
+When reviewing security-critical paths, you MUST enforce the following:
+- **AuthZ/AuthN:** Demand explicit authorization and authentication checks.
+- **Secrets:** Reject any hardcoded secrets, tokens, or exposed PII in logs/UI.
+- **Injection:** Verify absolute protection against SQL Injection, XSS, and CSRF.
+- **State Manipulation:** Ensure users cannot bypass validation by tampering with client-side state or API payloads.
