@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const VaultManager = require('./VaultManager');
+const DungeonManager = require('./DungeonManager');
 const pvp = require('mineflayer-pvp').plugin;
 const autoeat = require('mineflayer-auto-eat').loader;
 const UUID = require('uuid-1345');
@@ -282,6 +283,7 @@ const botVaultManagers = new Map();
 const isDisconnecting = new Map();
 const botStartTimes = new Map();
 const farmIntervals = new Map();
+const dungeonManagers = new Map();
 
 function startFarming(botId, bot) {
     if (farmIntervals.has(botId)) {
@@ -357,14 +359,14 @@ function startBot(botId, username, afkSpotId) {
 
     activeBots.set(botId, bot);
 
-    // --- 1.21.10 CONFIGURATION AND RESOURCE PACK STABILITY PATCH ---
+    // --- 1.21.1 CONFIGURATION AND RESOURCE PACK STABILITY PATCH ---
     bot._client.on('connect', () => {
         const originalWrite = bot._client.write.bind(bot._client);
         bot._client.write = (name, params) => {
             if (name === 'select_known_packs') {
                 params = {
                     packs: [
-                        { namespace: 'minecraft', id: 'core', version: '1.21.10' }
+                        { namespace: 'minecraft', id: 'core', version: '1.21.1' }
                     ]
                 };
             }
@@ -420,6 +422,7 @@ function startBot(botId, username, afkSpotId) {
 
     const accInfo = loadAccountConfig(username) || {};
     bot.pvpEnabled = accInfo.pvpEnabled !== false;
+    bot.enableTrivia = accInfo.enableTrivia === true;
 
     bot.once('inject_allowed', () => {
         tacticalLog(`[Bot Server] Bot ${username} using Minecraft version: ${bot.registry.version.minecraftVersion}`, 'info');
@@ -496,6 +499,18 @@ function startBot(botId, username, afkSpotId) {
                         setTimeout(() => {
                             startFarming(botId, bot);
                         }, 2000);
+                    }, 4000);
+                } else if (accInfoLocal.mode === 'afk') {
+                    const homeCmd = accInfoLocal.homeCmd || '/home';
+                    setTimeout(() => {
+                        tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu AFK: ${homeCmd}`, 'info');
+                        bot.chat(homeCmd);
+                    }, 4000);
+                } else if (accInfoLocal.mode === 'phoban') {
+                    setTimeout(() => {
+                        const dungeonMgr = new DungeonManager(bot, botId, username, io, tacticalLog);
+                        dungeonManagers.set(botId, dungeonMgr);
+                        dungeonMgr.start();
                     }, 4000);
                 } else {
                     setTimeout(() => {
@@ -598,6 +613,18 @@ function startBot(botId, username, afkSpotId) {
                             startFarming(botId, bot);
                         }, 2000);
                     }, 4000);
+                } else if (accInfo.mode === 'afk') {
+                    const homeCmd = accInfo.homeCmd || '/home';
+                    setTimeout(() => {
+                        tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu AFK: ${homeCmd}`, 'info');
+                        bot.chat(homeCmd);
+                    }, 4000);
+                } else if (accInfo.mode === 'phoban') {
+                    setTimeout(() => {
+                        const dungeonMgr = new DungeonManager(bot, botId, username, io, tacticalLog);
+                        dungeonManagers.set(botId, dungeonMgr);
+                        dungeonMgr.start();
+                    }, 4000);
                 } else {
                     setTimeout(() => {
                         const locations = loadLocations();
@@ -663,6 +690,12 @@ function startBot(botId, username, afkSpotId) {
     bot.on('message', (jsonMsg) => {
         const message = jsonMsg.toString();
         
+        // --- AUTO TRIVIA QUIZ SOLVER ---
+        if (bot.enableTrivia) {
+            handleQuizQuestion(bot, message);
+        }
+        // -------------------------------
+        
         if (message.toLowerCase().includes('/register') || message.toLowerCase().includes('đăng ký')) {
             const accInfo = loadAccountConfig(username);
             const pass = accInfo ? accInfo.pass : '15112009';
@@ -706,6 +739,11 @@ function startBot(botId, username, afkSpotId) {
         if (farmIntervals.has(botId)) {
             clearInterval(farmIntervals.get(botId));
             farmIntervals.delete(botId);
+        }
+
+        if (dungeonManagers.has(botId)) {
+            dungeonManagers.get(botId).stop();
+            dungeonManagers.delete(botId);
         }
 
         if (gameCheckInterval) {
@@ -775,6 +813,11 @@ function stopBot(botId, reason = 'User Requested') {
         farmIntervals.delete(botId);
     }
 
+    if (dungeonManagers.has(botId)) {
+        dungeonManagers.get(botId).stop();
+        dungeonManagers.delete(botId);
+    }
+
     const bot = activeBots.get(botId);
     if (bot) {
         bot.quit(reason);
@@ -813,6 +856,51 @@ function updateVitals(bot) {
         position: bot.entity?.position || { x: 0, y: 0, z: 0 },
         playerCount: bot.players ? Object.keys(bot.players).length : 0
     });
+}
+
+function cleanString(str) {
+    return str.replace(/<[^>]*>/g, '') // remove XML/HTML tags
+              .toLowerCase()
+              .replace(/[?.,!']/g, '') // remove punctuation
+              .trim()
+              .replace(/\s+/g, ' ');   // normalize spaces
+}
+
+function handleQuizQuestion(bot, questionText) {
+    try {
+        // Bỏ qua dòng tiêu đề thông báo đố vui
+        if (questionText.includes('Trả lời nhanh câu hỏi sau đây!')) return;
+
+        const cleanedQuestion = cleanString(questionText);
+        
+        const quizPath = path.join(__dirname, '../quiz.json');
+        if (!fs.existsSync(quizPath)) return;
+        
+        const quizData = JSON.parse(fs.readFileSync(quizPath, 'utf-8'));
+        
+        // So khớp tìm kiếm
+        let foundAnswer = null;
+        for (const key in quizData) {
+            const cleanedKey = cleanString(key);
+            if (cleanedQuestion === cleanedKey || (cleanedKey.length > 10 && cleanedQuestion.includes(cleanedKey))) {
+                foundAnswer = quizData[key];
+                break;
+            }
+        }
+        
+        if (foundAnswer) {
+            tacticalLog(`❓ [${bot.username}] Phát hiện câu hỏi: "${questionText}"`, 'info');
+            // Delay ngẫu nhiên từ 1.5s đến 3s
+            const delay = Math.floor(Math.random() * 1500) + 1500;
+            tacticalLog(`🎯 [${bot.username}] Khớp câu trả lời thành công: "${foundAnswer}". Sẽ gửi sau ${delay}ms...`, 'success');
+            setTimeout(() => {
+                bot.chat(foundAnswer);
+                tacticalLog(`💬 [${bot.username}] Đã trả lời: "${foundAnswer}"`, 'success');
+            }, delay);
+        }
+    } catch (e) {
+        console.error("Lỗi xử lý câu hỏi trivia:", e);
+    }
 }
 
 async function checkAndStashInventory(botId, bot, vaultMgr) {
