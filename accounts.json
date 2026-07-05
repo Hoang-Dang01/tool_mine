@@ -2,37 +2,41 @@
     {
         "id": "acc-2",
         "username": "Acetazolamid",
-        "pass": "Dat.2512",
-        "mode": "random",
+        "pass": "123456987aA",
+        "mode": "sell",
+        "homeCmd": "/home a1",
         "pvStart": 2,
         "pvEnd": 5,
-        "uptimeOffset": 43200000
+        "uptimeOffset": 46278826,
+        "pvpEnabled": false,
+        "afkSpotId": "",
+        "autoReconnect": true
     },
     {
         "id": "acc-3",
         "username": "vicentenguyen",
         "pass": "Dat.2512",
-        "mode": "phoban",
-        "phobanItem": "emerald",
+        "mode": "farm",
+        "homeCmd": "/home ngua",
         "pvpEnabled": false,
         "afkSpotId": "",
         "pvStart": 2,
-        "pvEnd": 4,
-        "uptimeOffset": 32400000,
-        "autoReconnect": false
+        "pvEnd": 5,
+        "uptimeOffset": 35238726,
+        "autoReconnect": true
     },
     {
         "id": "acc-5",
         "username": "yuevn",
         "pass": "123456987aA",
         "mode": "afk",
-        "pvpEnabled": true,
+        "pvpEnabled": false,
         "pvStart": 2,
         "pvEnd": 5,
         "homeCmd": "/home a1",
         "uptimeOffset": 12312819,
         "afkSpotId": "",
-        "autoReconnect": false
+        "autoReconnect": true
     },
     {
         "id": "acc-1782620973458",
@@ -42,7 +46,7 @@
         "pvpEnabled": false,
         "pvStart": 2,
         "pvEnd": 5,
-        "uptimeOffset": 1465586,
+        "uptimeOffset": 1469578,
         "homeCmd": "/home farm",
         "autoReconnect": true,
         "afkSpotId": ""
@@ -59,6 +63,58 @@
         "homeCmd": "/home bn",
         "autoReconnect": false,
         "enableTrivia": true,
+        "afkSpotId": ""
+    },
+    {
+        "id": "acc-1782620973459",
+        "username": "Disodiumtartrat",
+        "pass": "123456987aA",
+        "mode": "sell",
+        "homeCmd": "/home a1",
+        "pvStart": 2,
+        "pvEnd": 5,
+        "uptimeOffset": 2513507,
+        "autoReconnect": true,
+        "pvpEnabled": false,
+        "afkSpotId": ""
+    },
+    {
+        "id": "acc-1782620973460",
+        "username": "notthemewbat",
+        "pass": "123456987aA",
+        "mode": "sell",
+        "homeCmd": "/t spawn",
+        "pvStart": 2,
+        "pvEnd": 5,
+        "uptimeOffset": 3995536,
+        "autoReconnect": true,
+        "pvpEnabled": false,
+        "afkSpotId": ""
+    },
+    {
+        "id": "acc-1782620973461",
+        "username": "nguthichetocc",
+        "pass": "123456987aA",
+        "mode": "sell",
+        "homeCmd": "/t spawn",
+        "pvStart": 2,
+        "pvEnd": 5,
+        "uptimeOffset": 4759751,
+        "autoReconnect": true,
+        "pvpEnabled": false,
+        "afkSpotId": ""
+    },
+    {
+        "id": "acc-1782620973462",
+        "username": "wifitocdocao",
+        "pass": "123456987aA",
+        "mode": "sell",
+        "homeCmd": "/t spawn",
+        "pvStart": 2,
+        "pvEnd": 5,
+        "uptimeOffset": 3064225,
+        "autoReconnect": true,
+        "pvpEnabled": false,
         "afkSpotId": ""
     }
 ]

@@ -469,3 +469,87 @@ socket.on('locations_updated', (data) => {
 
 // Start fetching process
 fetchLocations();
+
+// =============================================
+// 💰 BẢNG TIẾN ĐỘ CÀY TIỀN (Trade Progress)
+// =============================================
+const botBalances = {}; // Lưu số dư mới nhất của mỗi bot
+
+socket.on('balance_update', ({ botId, username, balance, target }) => {
+    botBalances[botId] = { username, balance, target };
+    renderTradeProgress();
+});
+
+function renderTradeProgress() {
+    const panel = document.getElementById('tradeProgressPanel');
+    const content = document.getElementById('tradeProgressContent');
+    const totalLabel = document.getElementById('progressTotalLabel');
+    if (!panel || !content) return;
+
+    const entries = Object.values(botBalances);
+    if (entries.length === 0) return;
+
+    panel.style.display = 'block';
+
+    // Tính tổng
+    const totalBalance = entries.reduce((s, e) => s + e.balance, 0);
+    const totalTarget = entries.reduce((s, e) => s + e.target, 0);
+    const totalPct = Math.min(100, Math.round(totalBalance / totalTarget * 100));
+
+    totalLabel.textContent = `Tổng: $${totalBalance.toLocaleString()} / $${totalTarget.toLocaleString()} (${totalPct}%)`;
+
+    let html = '';
+    entries
+        .sort((a, b) => b.balance - a.balance)
+        .forEach(({ username, balance, target }) => {
+            const pct = Math.min(100, Math.round(balance / target * 100));
+            const remaining = Math.max(0, target - balance);
+            const done = balance >= target;
+
+            // Tính thời gian còn lại (ước tính ~$390k/phút mỗi bot)
+            const ratePerMin = 390000;
+            const minsLeft = done ? 0 : Math.ceil(remaining / ratePerMin);
+
+            const barColor = done
+                ? 'linear-gradient(90deg, #4ade80, #22c55e)'
+                : pct > 70
+                    ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+                    : 'linear-gradient(90deg, #3b82f6, #60a5fa)';
+
+            const statusIcon = done ? '✅' : '⚡';
+            const timeText = done ? '<span style="color:#4ade80">ĐÃ ĐẠT MỤC TIÊU!</span>' : `còn ~${minsLeft} phút`;
+
+            html += `
+            <div style="margin-bottom: 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span style="font-weight:700; font-size:13px; color:#e2e8f0;">${statusIcon} ${username}</span>
+                    <span style="font-size:12px; color:#94a3b8;">$${balance.toLocaleString()} / $${target.toLocaleString()}</span>
+                </div>
+                <div style="background:rgba(255,255,255,0.08); border-radius:6px; height:10px; overflow:hidden;">
+                    <div style="height:100%; width:${pct}%; background:${barColor}; border-radius:6px; transition: width 0.5s ease;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:3px; font-size:11px; color:#64748b;">
+                    <span>${pct}%</span>
+                    <span>${timeText}</span>
+                </div>
+            </div>`;
+        });
+
+    // Thanh tổng tiến độ
+    const totalBarColor = totalPct >= 100
+        ? 'linear-gradient(90deg, #4ade80, #22c55e)'
+        : 'linear-gradient(90deg, #a855f7, #8b5cf6)';
+
+    html += `
+    <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; margin-top:4px;">
+        <div style="display:flex; justify-content:space-between; font-size:12px; color:#c084fc; font-weight:700; margin-bottom:5px;">
+            <span>🏆 TỔNG CỘNG 6 ACC</span>
+            <span>$${totalBalance.toLocaleString()} (${totalPct}%)</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.08); border-radius:6px; height:12px; overflow:hidden;">
+            <div style="height:100%; width:${totalPct}%; background:${totalBarColor}; border-radius:6px; transition: width 0.5s ease;"></div>
+        </div>
+    </div>`;
+
+    content.innerHTML = html;
+}

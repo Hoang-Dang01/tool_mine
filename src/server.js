@@ -7,9 +7,36 @@ const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
 const VaultManager = require('./VaultManager');
 const DungeonManager = require('./DungeonManager');
+const TradeManager = require('./TradeManager');
 const pvp = require('mineflayer-pvp').plugin;
 const autoeat = require('mineflayer-auto-eat').loader;
 const UUID = require('uuid-1345');
+
+function extractText(obj) {
+    if (!obj) return '';
+    if (typeof obj === 'string') return obj;
+    if (typeof obj === 'number' || typeof obj === 'boolean') return String(obj);
+    if (Array.isArray(obj)) {
+        return obj.map(extractText).join(' ');
+    }
+    if (typeof obj === 'object') {
+        let parts = [];
+        for (const key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                const val = obj[key];
+                if (typeof val === 'string') {
+                    parts.push(val);
+                } else if (typeof val === 'object' && val !== null) {
+                    parts.push(extractText(val));
+                } else if (typeof val === 'number' || typeof val === 'boolean') {
+                    parts.push(String(val));
+                }
+            }
+        }
+        return parts.join(' ');
+    }
+    return '';
+}
 
 function loadLocations() {
     try {
@@ -284,6 +311,8 @@ const isDisconnecting = new Map();
 const botStartTimes = new Map();
 const farmIntervals = new Map();
 const dungeonManagers = new Map();
+const tradeManagers = new Map();
+const moneyIntervals = new Map();
 
 function startFarming(botId, bot) {
     if (farmIntervals.has(botId)) {
@@ -448,7 +477,9 @@ function startBot(botId, username, afkSpotId) {
         
         // 1. Kiểm tra tiêu đề bảng điểm (Scoreboard) xem có chứa các từ khóa liên quan đến Sảnh Chờ không
         const scoreboards = bot.scoreboards || bot.scoreboard;
-        if (scoreboards) {
+        if (!scoreboards || Object.keys(scoreboards).length === 0) {
+            isLobby = true;
+        } else {
             const sbValues = Object.values(scoreboards).map(s => s.name ? s.name.toLowerCase() : "");
             if (sbValues.some(name => name.includes('lobby') || name.includes('sảnh') || name.includes('chờ') || name.includes('luckyvn'))) {
                 isLobby = true;
@@ -506,6 +537,34 @@ function startBot(botId, username, afkSpotId) {
                         tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu AFK: ${homeCmd}`, 'info');
                         bot.chat(homeCmd);
                     }, 4000);
+                } else if (accInfoLocal.mode === 'sell') {
+                    const startMoneyCheck = () => {
+                        if (moneyIntervals.has(botId)) clearInterval(moneyIntervals.get(botId));
+                        const interval = setInterval(() => {
+                            if (bot && bot.entity) bot.chat('/money');
+                        }, 15000);
+                        moneyIntervals.set(botId, interval);
+                    };
+                    const homeCmd = accInfoLocal.homeCmd;
+                    if (homeCmd) {
+                        setTimeout(() => {
+                            tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển trước khi giao dịch: ${homeCmd}`, 'info');
+                            bot.chat(homeCmd);
+                            setTimeout(() => {
+                                const tradeMgr = new TradeManager(bot, botId, username, io, tacticalLog);
+                                tradeManagers.set(botId, tradeMgr);
+                                tradeMgr.start();
+                                startMoneyCheck();
+                            }, 6000); // Đợi 6 giây dịch chuyển
+                        }, 4000);
+                    } else {
+                        setTimeout(() => {
+                            const tradeMgr = new TradeManager(bot, botId, username, io, tacticalLog);
+                            tradeManagers.set(botId, tradeMgr);
+                            tradeMgr.start();
+                            startMoneyCheck();
+                        }, 4000);
+                    }
                 } else if (accInfoLocal.mode === 'phoban') {
                     setTimeout(() => {
                         const dungeonMgr = new DungeonManager(bot, botId, username, io, tacticalLog);
@@ -545,16 +604,17 @@ function startBot(botId, username, afkSpotId) {
     }
 
     bot.on('windowOpen', async (window) => {
-        tacticalLog(`[>] Bảng hiện ra: ${window.title}`, 'info');
+        if (gameLogicActivated) return;
+        tacticalLog(`[>] Bảng hiện ra: ${JSON.stringify(window.title)}`, 'info');
         await new Promise(res => setTimeout(res, 2000));
-        const title = window.title ? window.title.toUpperCase() : "";
+        const title = extractText(window.title).toUpperCase();
         if (title.includes('LUCKYVN') || title.includes('NETWORK') || title.includes('MENU')) {
             let slotTarget = 12; 
             for (let i = 0; i < window.slots.length; i++) {
                 const item = window.slots[i];
                 if (item) {
-                    const customText = item.customName ? item.customName.toUpperCase() : "";
-                    const vanillaText = item.displayName ? item.displayName.toUpperCase() : "";
+                    const customText = extractText(item.customName).toUpperCase();
+                    const vanillaText = extractText(item.displayName).toUpperCase();
                     if (customText.includes('SKYBLOCK') || vanillaText.includes('SKYBLOCK')) {
                         slotTarget = i;
                         break;
@@ -568,8 +628,8 @@ function startBot(botId, username, afkSpotId) {
             for (let i = 0; i < window.slots.length; i++) {
                 const item = window.slots[i];
                 if (item) {
-                    const customText = item.customName ? item.customName.toUpperCase() : "";
-                    const vanillaText = item.displayName ? item.displayName.toUpperCase() : "";
+                    const customText = extractText(item.customName).toUpperCase();
+                    const vanillaText = extractText(item.displayName).toUpperCase();
                     if (customText.includes('SPRING') || vanillaText.includes('SPRING')) {
                         slotTarget = i;
                         break;
@@ -602,7 +662,11 @@ function startBot(botId, username, afkSpotId) {
                         }, 1000);
                     }, 12000);
                 }, botConfig.loginDelayMs || 5000);
-            } else if (hasNavigatedLobby) {
+            } else if (hasNavigatedLobby && !gameLogicActivated) {
+                gameLogicActivated = true;
+                if (gameCheckInterval) {
+                    clearInterval(gameCheckInterval);
+                }
                 if (accInfo.mode === 'farm') {
                     const homeCmd = accInfo.homeCmd || '/home';
                     setTimeout(() => {
@@ -619,6 +683,34 @@ function startBot(botId, username, afkSpotId) {
                         tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu AFK: ${homeCmd}`, 'info');
                         bot.chat(homeCmd);
                     }, 4000);
+                } else if (accInfo.mode === 'sell') {
+                    const startMoneyCheck = () => {
+                        if (moneyIntervals.has(botId)) clearInterval(moneyIntervals.get(botId));
+                        const interval = setInterval(() => {
+                            if (bot && bot.entity) bot.chat('/money');
+                        }, 15000);
+                        moneyIntervals.set(botId, interval);
+                    };
+                    const homeCmd = accInfo.homeCmd;
+                    if (homeCmd) {
+                        setTimeout(() => {
+                            tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển trước khi giao dịch: ${homeCmd}`, 'info');
+                            bot.chat(homeCmd);
+                            setTimeout(() => {
+                                const tradeMgr = new TradeManager(bot, botId, username, io, tacticalLog);
+                                tradeManagers.set(botId, tradeMgr);
+                                tradeMgr.start();
+                                startMoneyCheck();
+                            }, 6000); // Đợi 6 giây dịch chuyển
+                        }, 4000);
+                    } else {
+                        setTimeout(() => {
+                            const tradeMgr = new TradeManager(bot, botId, username, io, tacticalLog);
+                            tradeManagers.set(botId, tradeMgr);
+                            tradeMgr.start();
+                            startMoneyCheck();
+                        }, 4000);
+                    }
                 } else if (accInfo.mode === 'phoban') {
                     setTimeout(() => {
                         const dungeonMgr = new DungeonManager(bot, botId, username, io, tacticalLog);
@@ -650,12 +742,26 @@ function startBot(botId, username, afkSpotId) {
 
         bot.on('playerJoined', () => updateVitals(bot));
         bot.on('playerLeft', () => updateVitals(bot));
+
+        bot.on('message', (jsonMsg) => {
+            const text = jsonMsg.toString().trim();
+            if (text) {
+                tacticalLog(`💬 [${username}] Chat: ${text}`, 'info');
+                
+                const textLower = text.toLowerCase();
+                if ((textLower.includes('dịch chuyển') || textLower.includes('teleport') || textLower.includes('tpa')) && 
+                    textLower.includes('mc_hlonggg')) {
+                    tacticalLog(`⚡ [${username}] Phát hiện yêu cầu TPA từ MC_hlonggg, đang chấp nhận...`, 'warning');
+                    bot.chat('/tpaccept');
+                }
+            }
+        });
     });
 
     let lastHealth = 20;
     bot.on('health', () => {
         updateVitals(bot);
-        if (bot.health < 6) {
+        if (gameLogicActivated && bot.health < 6) {
             tacticalLog(`⚠️ ${username}: Báo động đỏ! Máu quá thấp. Đang disconnect!`, 'error');
             stopBot(botId, 'Low Health Panic');
             return;
@@ -671,6 +777,13 @@ function startBot(botId, username, afkSpotId) {
             }
         }
         lastHealth = bot.health;
+    });
+
+    bot.on('death', () => {
+        tacticalLog(`💀 ${username} đã chết! Đang hồi sinh...`, 'warning');
+        try {
+            bot.respawn();
+        } catch (e) {}
     });
 
     bot.once('inject_allowed', () => {
@@ -695,6 +808,26 @@ function startBot(botId, username, afkSpotId) {
             handleQuizQuestion(bot, message);
         }
         // -------------------------------
+        
+        // Target balance check (30 Million Target)
+        const match = message.match(/Balance:\s*\$([\d,]+)/i);
+        if (match) {
+            const currentBal = parseInt(match[1].replace(/,/g, ''), 10);
+            const targetBalance = 30000000; // 30 Million Target
+            
+            // Phát sự kiện cập nhật số dư lên web dashboard
+            io.emit('balance_update', {
+                botId,
+                username,
+                balance: currentBal,
+                target: targetBalance
+            });
+            
+            if (currentBal >= targetBalance) {
+                tacticalLog(`🎯 ${username} ĐẠT MỤC TIÊU SỐ DƯ: $${currentBal.toLocaleString()}! Đang ngắt kết nối...`, 'success');
+                stopBot(botId, 'Target Balance Reached');
+            }
+        }
         
         if (message.toLowerCase().includes('/register') || message.toLowerCase().includes('đăng ký')) {
             const accInfo = loadAccountConfig(username);
@@ -746,6 +879,16 @@ function startBot(botId, username, afkSpotId) {
             dungeonManagers.delete(botId);
         }
 
+        if (tradeManagers.has(botId)) {
+            tradeManagers.get(botId).stop();
+            tradeManagers.delete(botId);
+        }
+
+        if (moneyIntervals.has(botId)) {
+            clearInterval(moneyIntervals.get(botId));
+            moneyIntervals.delete(botId);
+        }
+
         if (gameCheckInterval) {
             clearInterval(gameCheckInterval);
         }
@@ -770,7 +913,8 @@ function startBot(botId, username, afkSpotId) {
         botVaultManagers.delete(botId);
         botStartTimes.delete(botId);
 
-        // --- SWARM CASCADING DISCONNECT ---
+        // --- SWARM CASCADING DISCONNECT DISABLED BY USER REQUEST ---
+        /*
         try {
             const accountsPath = path.join(__dirname, '../accounts.json');
             const accounts = JSON.parse(fs.readFileSync(accountsPath, 'utf-8'));
@@ -790,14 +934,16 @@ function startBot(botId, username, afkSpotId) {
         } catch (e) {
             console.error("Cascade disconnect error:", e);
         }
-        // ----------------------------------
+        */
+        // ------------------------------------------------------------
 
         if (!isDisconnecting.get(botId)) {
             const accInfo = loadAccountConfig(username);
             const shouldReconnect = accInfo ? accInfo.autoReconnect === true : false;
             if (shouldReconnect) {
-                tacticalLog(`⏳ ${username} đang đợi kết nối lại sau 15 giây.`, 'info');
-                setTimeout(() => startBot(botId, username, afkSpotId), 15000);
+                const reconnectDelay = Math.floor(Math.random() * (45000 - 15000 + 1) + 15000);
+                tacticalLog(`⏳ ${username} đang đợi kết nối lại sau ${Math.round(reconnectDelay / 1000)} giây.`, 'info');
+                setTimeout(() => startBot(botId, username, afkSpotId), reconnectDelay);
             } else {
                 tacticalLog(`ℹ️ ${username} đã dừng hẳn (Không tự động kết nối lại).`, 'info');
             }
@@ -816,6 +962,16 @@ function stopBot(botId, reason = 'User Requested') {
     if (dungeonManagers.has(botId)) {
         dungeonManagers.get(botId).stop();
         dungeonManagers.delete(botId);
+    }
+
+    if (tradeManagers.has(botId)) {
+        tradeManagers.get(botId).stop();
+        tradeManagers.delete(botId);
+    }
+
+    if (moneyIntervals.has(botId)) {
+        clearInterval(moneyIntervals.get(botId));
+        moneyIntervals.delete(botId);
     }
 
     const bot = activeBots.get(botId);
@@ -905,6 +1061,9 @@ function handleQuizQuestion(bot, questionText) {
 
 async function checkAndStashInventory(botId, bot, vaultMgr) {
     if (!bot || !vaultMgr) return;
+    const accInfo = loadAccountConfig(bot.username);
+    if (accInfo && accInfo.mode === 'sell') return; // Bỏ qua nếu đang tự động giao dịch
+    
     const emptySlots = bot.inventory.emptySlotCount();
     if (emptySlots < 2) {
         tacticalLog(`📦 ${bot.username}: Balo đầy. Đang gọi Robot cất đồ...`, 'info');

@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { Terminal, Gamepad2, Play, Square, Pickaxe, Plus, Cpu, MapPin, Trash2, ArrowUp } from 'lucide-react';
+import { Gamepad2, Play, Square, Pickaxe, Plus, Cpu, MapPin, Trash2, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BotAccount {
@@ -15,13 +15,6 @@ interface BotAccount {
   uptimeOffset?: number;
 }
 
-interface LogEntry {
-  id: string;
-  message: string;
-  type: string;
-  time: string;
-}
-
 interface Location {
   id: string;
   name: string;
@@ -33,9 +26,9 @@ interface Location {
 export default function App() {
   const [_, setSocket] = useState<Socket | null>(null);
   const [accounts, setAccounts] = useState<BotAccount[]>([]);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [newUsername, setNewUsername] = useState('');
+  const [botBalances, setBotBalances] = useState<Record<string, { username: string; balance: number; target: number }>>({});
   
   // Location form state
   const [locName, setLocName] = useState('');
@@ -47,8 +40,6 @@ export default function App() {
   const [serverHost, setServerHost] = useState('');
   const [serverPort, setServerPort] = useState(25565);
   const [serverVersion, setServerVersion] = useState('');
-
-  const logsEndRef = useRef<HTMLDivElement>(null);
 
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -70,15 +61,17 @@ export default function App() {
     const s = io('/', { path: '/socket.io' });
     setSocket(s);
 
-    s.on('bot_log', (data: any) => {
-      setLogs((prev) => [...prev, { ...data, time: new Date().toLocaleTimeString('vi-VN') }]);
-    });
-
     s.on('bot_status', () => fetchAccounts());
     s.on('bot_spawn_success', () => fetchAccounts());
     s.on('locations_updated', (data: any) => {
       setLocations(data.afk_spots || []);
       fetchAccounts();
+    });
+    s.on('balance_update', (data: any) => {
+      setBotBalances(prev => ({
+        ...prev,
+        [data.botId]: { username: data.username, balance: data.balance, target: data.target }
+      }));
     });
 
     return () => { s.disconnect(); };
@@ -108,9 +101,8 @@ export default function App() {
     fetchConfig();
   }, []);
 
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
+
+
 
   const fetchAccounts = async () => {
     try {
@@ -225,8 +217,8 @@ export default function App() {
         </div>
       </header>
 
-      <main className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 z-10 min-h-0">
-        <section className="lg:col-span-2 flex flex-col gap-6 min-h-0">
+      <main className="grid grid-cols-1 gap-6 flex-1 z-10 min-h-0">
+        <section className="flex flex-col gap-6 min-h-0">
           
           <div className="glass-panel p-4 rounded-xl flex items-end gap-3 shrink-0">
             <div className="flex-1">
@@ -246,6 +238,53 @@ export default function App() {
             </button>
           </div>
           
+          {/* TRADE PROGRESS PANEL */}
+          {Object.keys(botBalances).length > 0 && (() => {
+            const entries = Object.values(botBalances);
+            const totalBal = entries.reduce((s, e) => s + e.balance, 0);
+            const totalTarget = entries.reduce((s, e) => s + e.target, 0);
+            const totalPct = Math.min(100, Math.round(totalBal / totalTarget * 100));
+            return (
+              <div className="glass-panel p-4 rounded-xl shrink-0">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                    💰 TIẾN ĐỘ CÀY TIỀN
+                  </h2>
+                  <span className="text-xs text-purple-300 font-semibold">
+                    Tổng: ${totalBal.toLocaleString()} / ${totalTarget.toLocaleString()} ({totalPct}%)
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {[...entries].sort((a, b) => b.balance - a.balance).map(({ username, balance, target }) => {
+                    const pct = Math.min(100, Math.round(balance / target * 100));
+                    const done = balance >= target;
+                    const minsLeft = done ? 0 : Math.ceil((target - balance) / 390000);
+                    const barColor = done ? 'bg-emerald-500' : pct > 70 ? 'bg-amber-400' : 'bg-blue-500';
+                    return (
+                      <div key={username}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-semibold text-zinc-200">{done ? '✅' : '⚡'} {username}</span>
+                          <span className="text-zinc-400">${balance.toLocaleString()} {done ? <span className="text-emerald-400 font-bold">ĐẠT MỤC TIÊU!</span> : `· còn ~${minsLeft}ph`}</span>
+                        </div>
+                        <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className={`h-full ${barColor} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="border-t border-white/10 pt-2 mt-1">
+                    <div className="flex justify-between text-xs text-purple-300 font-bold mb-1">
+                      <span>🏆 TỔNG CỘNG</span><span>{totalPct}%</span>
+                    </div>
+                    <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500" style={{ width: `${totalPct}%` }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* BOT INSTANCES */}
           <div className="flex flex-col gap-4 flex-1 min-h-0">
             <div className="flex items-center justify-between">
@@ -315,6 +354,9 @@ export default function App() {
                         >
                           <option value="random">🎲 Random AFK</option>
                           <option value="farm">⚔️ Auto Farm (Spawner)</option>
+                          <option value="sell">💰 Auto Sell (Bán đồ)</option>
+                          <option value="afk">🏠 AFK Spot / Home</option>
+                          <option value="phoban">🏰 Dungeon Mode (Phó bản)</option>
                         </select>
                         <div className="flex flex-col gap-1 shrink-0 justify-center min-w-[70px]">
                           <label className="flex items-center gap-1 cursor-pointer select-none text-[10px] text-zinc-300">
@@ -409,26 +451,6 @@ export default function App() {
               <input type="number" placeholder="Z" className="w-16 bg-zinc-900 border border-white/10 rounded-lg px-2 py-1.5 text-xs outline-none" value={locZ} onChange={e => setLocZ(e.target.value)} />
               <button onClick={addLocation} className="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/30 px-3 rounded-lg text-xs font-medium transition-colors">Add</button>
             </div>
-          </div>
-        </section>
-
-        <section className="flex flex-col min-h-0 glass-panel rounded-xl overflow-hidden">
-          <div className="bg-zinc-900 border-b border-white/5 p-3 flex items-center gap-2">
-            <Terminal size={18} className="text-cyan-400" />
-            <h2 className="text-sm font-semibold tracking-wide text-zinc-300">TACTICAL CONSOLE</h2>
-          </div>
-          
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 text-sm font-mono text-zinc-300">
-            {logs.map((log, i) => (
-              <div key={i} className="flex gap-3 leading-relaxed">
-                <span className="text-zinc-500 shrink-0">[{log.time}]</span>
-                <span className={log.type === 'error' ? 'text-red-400' : log.type === 'success' ? 'text-emerald-400' : 'text-cyan-200'}>
-                  {log.message}
-                </span>
-              </div>
-            ))}
-            <div ref={logsEndRef} />
-            {logs.length === 0 && <p className="text-zinc-600 text-center mt-10 italic">Awaiting telemetry...</p>}
           </div>
         </section>
       </main>
