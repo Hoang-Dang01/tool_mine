@@ -10,7 +10,7 @@
         "uptimeOffset": 46278826,
         "pvpEnabled": false,
         "afkSpotId": "",
-        "autoReconnect": true
+        "autoReconnect": false
     },
     {
         "id": "acc-3",
@@ -61,7 +61,7 @@
         "pvEnd": 5,
         "uptimeOffset": 1435856,
         "homeCmd": "/home bn",
-        "autoReconnect": false,
+        "autoReconnect": true,
         "enableTrivia": true,
         "afkSpotId": ""
     },
@@ -74,7 +74,7 @@
         "pvStart": 2,
         "pvEnd": 5,
         "uptimeOffset": 2513507,
-        "autoReconnect": true,
+        "autoReconnect": false,
         "pvpEnabled": false,
         "afkSpotId": ""
     },
@@ -87,7 +87,7 @@
         "pvStart": 2,
         "pvEnd": 5,
         "uptimeOffset": 3995536,
-        "autoReconnect": true,
+        "autoReconnect": false,
         "pvpEnabled": false,
         "afkSpotId": ""
     },
@@ -100,7 +100,7 @@
         "pvStart": 2,
         "pvEnd": 5,
         "uptimeOffset": 4759751,
-        "autoReconnect": true,
+        "autoReconnect": false,
         "pvpEnabled": false,
         "afkSpotId": ""
     },
@@ -113,7 +113,7 @@
         "pvStart": 2,
         "pvEnd": 5,
         "uptimeOffset": 3064225,
-        "autoReconnect": true,
+        "autoReconnect": false,
         "pvpEnabled": false,
         "afkSpotId": ""
     }

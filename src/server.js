@@ -1099,4 +1099,25 @@ server.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`⛏️  MINECRAFT AFK ENGINE ĐÃ CHẠY TẠI PORT ${PORT}`);
     console.log(`=========================================`);
+
+    // Tự động chạy các bot có cấu hình autoReconnect = true khi khởi động server
+    try {
+        const accountsPath = path.join(__dirname, '../accounts.json');
+        if (fs.existsSync(accountsPath)) {
+            const accounts = JSON.parse(fs.readFileSync(accountsPath, 'utf-8'));
+            let activeCount = 0;
+            accounts.forEach((acc) => {
+                if (acc.autoReconnect === true) {
+                    const startDelay = activeCount * 5000; // Giãn cách 5 giây mỗi bot để tránh trùng lặp kết nối
+                    activeCount++;
+                    setTimeout(() => {
+                        tacticalLog(`[Auto Start] Kích hoạt tự động bot: ${acc.username}`, 'info');
+                        startBot(acc.id, acc.username, acc.afkSpotId);
+                    }, startDelay);
+                }
+            });
+        }
+    } catch (e) {
+        console.error("[Auto Start] Lỗi khi tự động khởi chạy bot:", e);
+    }
 });
