@@ -349,6 +349,62 @@ function startFarming(botId, bot) {
     farmIntervals.set(botId, interval);
 }
 
+function startFarmingBow(botId, bot) {
+    if (farmIntervals.has(botId)) {
+        clearInterval(farmIntervals.get(botId));
+    }
+    
+    tacticalLog(`🏹 Kích hoạt chế độ TỰ ĐỘNG BẮN CUNG cho ${bot.username}!`, 'success');
+    try {
+        bot.setQuickBarSlot(0); // Chuyển sang ô 1 (chứa cung)
+    } catch (e) {}
+    
+    function runBowLoop() {
+        if (!bot || !bot.entity) return;
+        
+        try {
+            bot.setQuickBarSlot(0); // Đảm bảo luôn cầm ô 1 (chứa cung)
+        } catch (e) {}
+        
+        // Quét mục tiêu xung quanh trong bán kính rộng hơn (ví dụ 16 block cho tầm xa)
+        const entity = bot.nearestEntity(e => 
+            (e.type === 'mob' || e.type === 'animal') && 
+            bot.entity.position.distanceTo(e.position) < 16
+        );
+        
+        if (entity) {
+            // Xoay đầu nhìn thẳng mục tiêu
+            const targetPos = entity.position.offset(0, entity.height ? entity.height / 2 : 1, 0);
+            bot.lookAt(targetPos, true);
+            
+            // Kéo cung (ấn giữ chuột phải)
+            try {
+                bot.activateItem(); 
+            } catch (e) {}
+            
+            // Chờ 2 giây để kéo căng cung rồi thả
+            const shootTimeout = setTimeout(() => {
+                if (!bot || !bot.entity) return;
+                try {
+                    bot.deactivateItem(); // Nhả chuột phải => Bắn tên
+                } catch (e) {}
+                
+                // Nghỉ 1 giây trước khi bắn phát tiếp theo
+                const nextTimeout = setTimeout(runBowLoop, 1000);
+                farmIntervals.set(botId, nextTimeout);
+            }, 2000);
+            
+            farmIntervals.set(botId, shootTimeout);
+        } else {
+            // Nếu không có quái, nghỉ 1 giây rồi quét lại
+            const idleTimeout = setTimeout(runBowLoop, 1000);
+            farmIntervals.set(botId, idleTimeout);
+        }
+    }
+    
+    runBowLoop();
+}
+
 function tacticalLog(message, type = 'info') {
     console.log(message);
     io.emit('bot_log', { message, type });
@@ -521,14 +577,18 @@ function startBot(botId, username, afkSpotId) {
 
             const accInfoLocal = loadAccountConfig(username);
             if (accInfoLocal) {
-                if (accInfoLocal.mode === 'farm') {
+                if (accInfoLocal.mode === 'farm' || accInfoLocal.mode === 'farm_bow') {
                     const homeCmd = accInfoLocal.homeCmd || '/home';
                     setTimeout(() => {
                         tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu farm: ${homeCmd}`, 'info');
                         bot.chat(homeCmd);
                         
                         setTimeout(() => {
-                            startFarming(botId, bot);
+                            if (accInfoLocal.mode === 'farm_bow') {
+                                startFarmingBow(botId, bot);
+                            } else {
+                                startFarming(botId, bot);
+                            }
                         }, 2000);
                     }, 4000);
                 } else if (accInfoLocal.mode === 'afk') {
@@ -667,14 +727,18 @@ function startBot(botId, username, afkSpotId) {
                 if (gameCheckInterval) {
                     clearInterval(gameCheckInterval);
                 }
-                if (accInfo.mode === 'farm') {
+                if (accInfo.mode === 'farm' || accInfo.mode === 'farm_bow') {
                     const homeCmd = accInfo.homeCmd || '/home';
                     setTimeout(() => {
                         tacticalLog(`🏠 ${username} đang chạy lệnh dịch chuyển về khu farm: ${homeCmd}`, 'info');
                         bot.chat(homeCmd);
                         
                         setTimeout(() => {
-                            startFarming(botId, bot);
+                            if (accInfo.mode === 'farm_bow') {
+                                startFarmingBow(botId, bot);
+                            } else {
+                                startFarming(botId, bot);
+                            }
                         }, 2000);
                     }, 4000);
                 } else if (accInfo.mode === 'afk') {
@@ -803,11 +867,9 @@ function startBot(botId, username, afkSpotId) {
     bot.on('message', (jsonMsg) => {
         const message = jsonMsg.toString();
         
-        // --- AUTO TRIVIA QUIZ SOLVER ---
-        if (bot.enableTrivia) {
-            handleQuizQuestion(bot, message);
-        }
-        // -------------------------------
+        // --- AUTO TRIVIA QUIZ SOLVER & LEARNER ---
+        handleQuizQuestion(bot, message);
+        // -----------------------------------------
         
         // Target balance check (30 Million Target)
         const match = message.match(/Balance:\s*\$([\d,]+)/i);
@@ -1022,37 +1084,98 @@ function cleanString(str) {
               .replace(/\s+/g, ' ');   // normalize spaces
 }
 
-function handleQuizQuestion(bot, questionText) {
-    try {
-        // Bỏ qua dòng tiêu đề thông báo đố vui
-        if (questionText.includes('Trả lời nhanh câu hỏi sau đây!')) return;
+const currentQuestions = new Map();
+const expectingQuizQuestion = new Map();
 
-        const cleanedQuestion = cleanString(questionText);
-        
+function updateQuizDatabase(question, answer) {
+    try {
         const quizPath = path.join(__dirname, '../quiz.json');
-        if (!fs.existsSync(quizPath)) return;
+        let quizData = {};
+        if (fs.existsSync(quizPath)) {
+            quizData = JSON.parse(fs.readFileSync(quizPath, 'utf-8'));
+        }
         
-        const quizData = JSON.parse(fs.readFileSync(quizPath, 'utf-8'));
-        
-        // So khớp tìm kiếm
-        let foundAnswer = null;
+        const cleanedQuestion = cleanString(question);
+        let exists = false;
         for (const key in quizData) {
-            const cleanedKey = cleanString(key);
-            if (cleanedQuestion === cleanedKey || (cleanedKey.length > 10 && cleanedQuestion.includes(cleanedKey))) {
-                foundAnswer = quizData[key];
+            if (cleanString(key) === cleanedQuestion) {
+                exists = true;
+                if (quizData[key] !== answer) {
+                    quizData[key] = answer;
+                    fs.writeFileSync(quizPath, JSON.stringify(quizData, null, 2));
+                    tacticalLog(`📝 [Trivia] Cập nhật đáp án mới cho câu hỏi: "${question}" -> "${answer}"`, 'success');
+                }
                 break;
             }
         }
         
-        if (foundAnswer) {
-            tacticalLog(`❓ [${bot.username}] Phát hiện câu hỏi: "${questionText}"`, 'info');
-            // Delay ngẫu nhiên từ 1.5s đến 3s
-            const delay = Math.floor(Math.random() * 1500) + 1500;
-            tacticalLog(`🎯 [${bot.username}] Khớp câu trả lời thành công: "${foundAnswer}". Sẽ gửi sau ${delay}ms...`, 'success');
-            setTimeout(() => {
-                bot.chat(foundAnswer);
-                tacticalLog(`💬 [${bot.username}] Đã trả lời: "${foundAnswer}"`, 'success');
-            }, delay);
+        if (!exists) {
+            const formattedKey = question.startsWith('<yellow>') ? question : `<yellow>${question}</yellow>`;
+            quizData[formattedKey] = answer;
+            fs.writeFileSync(quizPath, JSON.stringify(quizData, null, 2));
+            tacticalLog(`✨ [Trivia] Tự động học câu hỏi mới: "${question}" -> "${answer}"`, 'success');
+        }
+    } catch (e) {
+        console.error("Lỗi cập nhật quiz database:", e);
+    }
+}
+
+function handleQuizQuestion(bot, message) {
+    try {
+        const text = message.trim();
+        if (!text) return;
+
+        // 1. Phát hiện tiêu đề đố vui
+        if (text.includes('Trả lời nhanh câu hỏi sau đây!')) {
+            expectingQuizQuestion.set(bot.username, true);
+            return;
+        }
+
+        // 2. Phát hiện đáp án từ server để học tự động
+        const answerMatch = text.match(/Answer:\s*(.+)/i);
+        if (answerMatch) {
+            const answer = answerMatch[1].trim();
+            const question = currentQuestions.get(bot.username);
+            if (question) {
+                updateQuizDatabase(question, answer);
+                currentQuestions.delete(bot.username);
+            }
+            return;
+        }
+
+        // 3. Nếu đang đợi câu hỏi thực tế từ server
+        if (expectingQuizQuestion.get(bot.username)) {
+            expectingQuizQuestion.set(bot.username, false);
+            currentQuestions.set(bot.username, text);
+            
+            // Xử lý tự động trả lời nếu tính năng trivia được bật cho bot này và bot là vicente1
+            if (bot.enableTrivia && bot.username === 'vicente1') {
+                const cleanedQuestion = cleanString(text);
+                const quizPath = path.join(__dirname, '../quiz.json');
+                if (fs.existsSync(quizPath)) {
+                    const quizData = JSON.parse(fs.readFileSync(quizPath, 'utf-8'));
+                    let foundAnswer = null;
+                    for (const key in quizData) {
+                        const cleanedKey = cleanString(key);
+                        if (cleanedQuestion === cleanedKey || (cleanedKey.length > 10 && cleanedQuestion.includes(cleanedKey))) {
+                            foundAnswer = quizData[key];
+                            break;
+                        }
+                    }
+                    
+                    if (foundAnswer) {
+                        tacticalLog(`❓ [${bot.username}] Phát hiện câu hỏi: "${text}"`, 'info');
+                        const delay = Math.floor(Math.random() * 1500) + 1500;
+                        tacticalLog(`🎯 [${bot.username}] Khớp câu trả lời thành công: "${foundAnswer}". Sẽ gửi sau ${delay}ms...`, 'success');
+                        setTimeout(() => {
+                            bot.chat(foundAnswer);
+                            tacticalLog(`💬 [${bot.username}] Đã trả lời: "${foundAnswer}"`, 'success');
+                        }, delay);
+                    } else {
+                        tacticalLog(`❓ [${bot.username}] Chưa biết câu trả lời cho: "${text}". Đang đợi server công bố đáp án để học...`, 'warning');
+                    }
+                }
+            }
         }
     } catch (e) {
         console.error("Lỗi xử lý câu hỏi trivia:", e);
@@ -1094,7 +1217,7 @@ io.on('connection', (socket) => {
     socket.emit('bot_status', { status: 'connected' });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`⛏️  MINECRAFT AFK ENGINE ĐÃ CHẠY TẠI PORT ${PORT}`);
